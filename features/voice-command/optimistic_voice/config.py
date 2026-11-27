@@ -37,9 +37,9 @@ class OptimisticConfig:
     channels: int = 1
     chunk_samples: int = 1600  # 100 ms frames at 16 kHz
     input_device: int | str | None = None
-    vad_energy_threshold: float = float(os.getenv("OPTIMISTIC_VAD_THRESHOLD", "0.012"))
-    vad_speech_pad_chunks: int = 2
-    vad_silence_chunks: int = 8  # 800 ms of silence ends utterance
+    vad_energy_threshold: float = float(os.getenv("OPTIMISTIC_VAD_THRESHOLD", "0.004"))
+    vad_speech_pad_chunks: int = 4
+    vad_silence_chunks: int = 7  # 700 ms of silence ends utterance
     max_utterance_s: float = 15.0
     noise_reduction_enabled: bool = True
 

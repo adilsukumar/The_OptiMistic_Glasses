@@ -19,7 +19,8 @@ def test_vad_detects_speech_then_silence() -> None:
         chunk_samples=1600,
     )
     silence = np.zeros(1600, dtype=np.float32)
-    speech = 0.2 * np.sin(np.linspace(0, 40, 1600, dtype=np.float32))
+    # 500 Hz speech-band tone (16 kHz sample rate -> ~50 cycles in 1600 samples)
+    speech = 0.2 * np.sin(np.linspace(0, 314, 1600, dtype=np.float32))
 
     assert vad.process_chunk(silence) is None
     assert vad.process_chunk(speech) is None
