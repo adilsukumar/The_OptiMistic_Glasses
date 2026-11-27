@@ -16,3 +16,7 @@ __pycache__/
 **/logs/
 **/unrecognized_samples/
 *.tmp
+
+# Downloaded offline speech models (reproducible via setup_pi.sh / setup_windows.ps1)
+**/models/speech_models/vosk-model-*
+**/models/speech_models/*.onnx*
