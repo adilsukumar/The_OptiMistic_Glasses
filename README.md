@@ -1,6 +1,6 @@
 # The OptiMistic Glasses
 
-Smart glasses assistive AI platform powered by Raspberry Pi 4 / Pi 5.
+Smart glasses assistive AI platform powered by Raspberry Pi 3.
 
 ## Features
 
