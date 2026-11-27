@@ -1,193 +1,129 @@
 {
-  "num_classes": 23,
+  "num_classes": 15,
   "label_to_id": {
-    "40. I": 0,
-    "41. you": 1,
-    "42. he": 2,
-    "43. she": 3,
-    "44. it": 4,
-    "45. we": 5,
-    "46. you (plural)": 6,
-    "47. they": 7,
-    "48. Hello": 8,
-    "49. How are you": 9,
-    "50. Alright": 10,
-    "51. Good Morning": 11,
-    "52. Good afternoon": 12,
-    "53. Good evening": 13,
-    "54. Good night": 14,
-    "55. Thank you": 15,
-    "56. Pleased": 16,
-    "61. Summer": 17,
-    "62. Spring": 18,
-    "63. Winter": 19,
-    "64. Fall": 20,
-    "65. Season": 21,
-    "Ex. Monsoon": 22
+    "48. Hello": 0,
+    "49. How are you": 1,
+    "50. Alright": 2,
+    "51. Good Morning": 3,
+    "52. Good afternoon": 4,
+    "53. Good evening": 5,
+    "54. Good night": 6,
+    "55. Thank you": 7,
+    "56. Pleased": 8,
+    "61. Summer": 9,
+    "62. Spring": 10,
+    "63. Winter": 11,
+    "64. Fall": 12,
+    "65. Season": 13,
+    "Ex. Monsoon": 14
   },
   "id_to_label": {
     "0": {
       "id": 0,
-      "original_label": "40. I",
-      "display_label": "I",
-      "parent_label": "Pronouns"
-    },
-    "1": {
-      "id": 1,
-      "original_label": "41. you",
-      "display_label": "YOU",
-      "parent_label": "Pronouns"
-    },
-    "2": {
-      "id": 2,
-      "original_label": "42. he",
-      "display_label": "HE",
-      "parent_label": "Pronouns"
-    },
-    "3": {
-      "id": 3,
-      "original_label": "43. she",
-      "display_label": "SHE",
-      "parent_label": "Pronouns"
-    },
-    "4": {
-      "id": 4,
-      "original_label": "44. it",
-      "display_label": "IT",
-      "parent_label": "Pronouns"
-    },
-    "5": {
-      "id": 5,
-      "original_label": "45. we",
-      "display_label": "WE",
-      "parent_label": "Pronouns"
-    },
-    "6": {
-      "id": 6,
-      "original_label": "46. you (plural)",
-      "display_label": "YOU (PLURAL)",
-      "parent_label": "Pronouns"
-    },
-    "7": {
-      "id": 7,
-      "original_label": "47. they",
-      "display_label": "THEY",
-      "parent_label": "Pronouns"
-    },
-    "8": {
-      "id": 8,
       "original_label": "48. Hello",
       "display_label": "HELLO",
       "parent_label": "Greetings"
     },
-    "9": {
-      "id": 9,
+    "1": {
+      "id": 1,
       "original_label": "49. How are you",
       "display_label": "HOW ARE YOU",
       "parent_label": "Greetings"
     },
-    "10": {
-      "id": 10,
+    "2": {
+      "id": 2,
       "original_label": "50. Alright",
       "display_label": "ALRIGHT",
       "parent_label": "Greetings"
     },
-    "11": {
-      "id": 11,
+    "3": {
+      "id": 3,
       "original_label": "51. Good Morning",
       "display_label": "GOOD MORNING",
       "parent_label": "Greetings"
     },
-    "12": {
-      "id": 12,
+    "4": {
+      "id": 4,
       "original_label": "52. Good afternoon",
       "display_label": "GOOD AFTERNOON",
       "parent_label": "Greetings"
     },
-    "13": {
-      "id": 13,
+    "5": {
+      "id": 5,
       "original_label": "53. Good evening",
       "display_label": "GOOD EVENING",
       "parent_label": "Greetings"
     },
-    "14": {
-      "id": 14,
+    "6": {
+      "id": 6,
       "original_label": "54. Good night",
       "display_label": "GOOD NIGHT",
       "parent_label": "Greetings"
     },
-    "15": {
-      "id": 15,
+    "7": {
+      "id": 7,
       "original_label": "55. Thank you",
       "display_label": "THANK YOU",
       "parent_label": "Greetings"
     },
-    "16": {
-      "id": 16,
+    "8": {
+      "id": 8,
       "original_label": "56. Pleased",
       "display_label": "PLEASED",
       "parent_label": "Greetings"
     },
-    "17": {
-      "id": 17,
+    "9": {
+      "id": 9,
       "original_label": "61. Summer",
       "display_label": "SUMMER",
       "parent_label": "Seasons"
     },
-    "18": {
-      "id": 18,
+    "10": {
+      "id": 10,
       "original_label": "62. Spring",
       "display_label": "SPRING",
       "parent_label": "Seasons"
     },
-    "19": {
-      "id": 19,
+    "11": {
+      "id": 11,
       "original_label": "63. Winter",
       "display_label": "WINTER",
       "parent_label": "Seasons"
     },
-    "20": {
-      "id": 20,
+    "12": {
+      "id": 12,
       "original_label": "64. Fall",
       "display_label": "FALL",
       "parent_label": "Seasons"
     },
-    "21": {
-      "id": 21,
+    "13": {
+      "id": 13,
       "original_label": "65. Season",
       "display_label": "SEASON",
       "parent_label": "Seasons"
     },
-    "22": {
-      "id": 22,
+    "14": {
+      "id": 14,
       "original_label": "Ex. Monsoon",
       "display_label": "MONSOON",
       "parent_label": "Seasons"
     }
   },
   "id_to_display": {
-    "0": "I",
-    "1": "YOU",
-    "2": "HE",
-    "3": "SHE",
-    "4": "IT",
-    "5": "WE",
-    "6": "YOU (PLURAL)",
-    "7": "THEY",
-    "8": "HELLO",
-    "9": "HOW ARE YOU",
-    "10": "ALRIGHT",
-    "11": "GOOD MORNING",
-    "12": "GOOD AFTERNOON",
-    "13": "GOOD EVENING",
-    "14": "GOOD NIGHT",
-    "15": "THANK YOU",
-    "16": "PLEASED",
-    "17": "SUMMER",
-    "18": "SPRING",
-    "19": "WINTER",
-    "20": "FALL",
-    "21": "SEASON",
-    "22": "MONSOON"
+    "0": "HELLO",
+    "1": "HOW ARE YOU",
+    "2": "ALRIGHT",
+    "3": "GOOD MORNING",
+    "4": "GOOD AFTERNOON",
+    "5": "GOOD EVENING",
+    "6": "GOOD NIGHT",
+    "7": "THANK YOU",
+    "8": "PLEASED",
+    "9": "SUMMER",
+    "10": "SPRING",
+    "11": "WINTER",
+    "12": "FALL",
+    "13": "SEASON",
+    "14": "MONSOON"
   }
 }

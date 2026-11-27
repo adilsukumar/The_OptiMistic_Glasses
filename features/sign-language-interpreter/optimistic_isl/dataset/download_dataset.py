@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import logging
@@ -179,12 +178,6 @@ def main() -> None:
         action="store_true",
         help="List available Zenodo zip archives and exit.",
     )
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=2,
-        help="Number of concurrent archive downloads (default: 2).",
-    )
     args = parser.parse_args()
 
     config.ensure_directories()
@@ -218,7 +211,7 @@ def main() -> None:
         [f["key"] for f in selected],
     )
 
-    def _process_item(item: Dict) -> str:
+    for item in selected:
         zip_path = config.RAW_ZIPS_DIR / item["key"]
         download_file_with_resume(
             url=item["links"]["self"],
@@ -240,11 +233,6 @@ def main() -> None:
         if args.delete_zips:
             zip_path.unlink(missing_ok=True)
             logger.info("Deleted archive %s after extraction.", item["key"])
-        return item["key"]
-
-    with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
-        for done_key in pool.map(_process_item, selected):
-            logger.info("Completed archive: %s", done_key)
 
     logger.info("Download & extraction complete.")
 

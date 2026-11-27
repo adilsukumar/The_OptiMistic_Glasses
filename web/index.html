@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The OptiMistic Glasses — Hand-Symbol Conversation Translator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <h1>The OptiMistic Glasses</h1>
+        <p class="subtitle">Live Hand-Symbol ISL Conversation Translator &amp; Complete Guide</p>
+      </div>
+    </div>
+    <div class="status-pills">
+      <span id="api-status" class="pill pill-muted">API: Connecting...</span>
+      <span id="cam-status" class="pill pill-muted">Camera: Stopped</span>
+      <label class="toggle-label">
+        <input id="auto-speak" type="checkbox" checked />
+        <span>Auto-Speak</span>
+      </label>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Live Camera + Hand Landmarks -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Live Hand-Symbol Camera</h2>
+        <div class="btn-row">
+          <button id="start-cam-btn" class="btn btn-primary" type="button">Start Camera</button>
+          <button id="reset-buf-btn" class="btn btn-secondary" type="button" disabled>Reset</button>
+          <button id="stop-cam-btn" class="btn btn-secondary" type="button" disabled>Stop</button>
+        </div>
+      </div>
+      <div class="camera-box">
+        <img id="camera-stream" alt="Live camera feed with MediaPipe hand landmarks" class="hidden" />
+        <div id="camera-placeholder" class="camera-placeholder">
+          Click <strong>Start Camera</strong> and show hand symbols to build a live conversation.
+        </div>
+      </div>
+      <div class="cam-telemetry">
+        <span id="hands-indicator">Hands: --</span>
+        <span id="fps-indicator">FPS: --</span>
+        <span id="latency-indicator">AI: -- ms</span>
+        <span id="buffer-indicator">Buffer: 0/30</span>
+      </div>
+      <div class="threshold-row">
+        <label for="threshold-slider">Sensitivity: <strong id="threshold-val">55%</strong></label>
+        <input id="threshold-slider" type="range" min="35" max="90" value="55" />
+      </div>
+    </section>
+
+    <!-- Smart Glasses Conversation HUD -->
+    <section class="card hud-card">
+      <div class="card-header">
+        <h2>Live Conversation HUD</h2>
+        <span id="hud-clock" class="mono">--:--:--</span>
+      </div>
+
+      <div class="hud-screen" id="hud-screen">
+        <div class="hud-top">
+          <span class="hud-badge">CONVERSATION MODE</span>
+          <span id="hud-mode" class="hud-mode">STANDBY</span>
+        </div>
+
+        <div class="hud-center">
+          <div id="hud-symbol" class="hud-symbol">🖐️</div>
+          <div id="hud-primary" class="hud-primary">Ready for Conversation</div>
+          <div id="hud-secondary" class="hud-secondary">Sign hand symbols one after another to form a full sentence</div>
+        </div>
+
+        <div class="hud-bottom">
+          <span id="hud-confidence">Confidence: --</span>
+          <span id="hud-category">Category: --</span>
+        </div>
+      </div>
+
+      <!-- Full Conversation Sentence Builder -->
+      <div class="conversation-panel">
+        <div class="transcript-header">
+          <h3>Live Conversation Sentence</h3>
+          <div class="btn-row">
+            <button id="speak-sentence-btn" class="chip chip-accent" type="button">🔊 Speak Sentence</button>
+            <button id="undo-word-btn" class="chip" type="button">↩ Undo</button>
+            <button id="clear-transcript-btn" class="chip" type="button">Clear</button>
+          </div>
+        </div>
+        <div id="conversation-sentence" class="conversation-sentence">
+          <span class="muted">Your signed conversation will appear here as a full sentence...</span>
+        </div>
+      </div>
+
+      <div class="top3-box">
+        <div class="top3-title">Live Model Top-3 Hand Candidates</div>
+        <div id="top3-bars" class="top3-bars">
+          <span class="muted">Start camera and show hands to see live probabilities...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Complete Conversation Flows -->
+    <section class="card span-2">
+      <div class="card-header">
+        <h2>Complete Conversation Guide — How to Chain Hand Symbols</h2>
+        <div id="isl-metrics-summary" class="metrics-summary">Loading model metrics...</div>
+      </div>
+      <p class="muted">
+        To hold a <strong>full conversation</strong> (not just one word), sign each hand symbol for ~1–1.5 seconds, pause 0.5 seconds, then sign the next. Click any conversation below to preview it on the HUD:
+      </p>
+      <div id="conversation-flows" class="flows-grid"></div>
+    </section>
+
+    <!-- Hand-Symbol Reference Cards -->
+    <section class="card span-2">
+      <div class="card-header">
+        <h2>Hand-Symbol Dictionary (All 15 Live-Recognized Signs)</h2>
+        <span class="badge">Hand Symbol + Exact Motion</span>
+      </div>
+      <div id="gesture-grid" class="guide-grid"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

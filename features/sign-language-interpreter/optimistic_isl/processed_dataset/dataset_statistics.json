@@ -1,159 +1,100 @@
 {
-  "total_discovered_unique_videos": 443,
+  "total_discovered_unique_videos": 275,
   "skipped_md5_duplicates": 0,
-  "valid_sequences": 434,
-  "rejected_sequences": 9,
+  "valid_sequences": 271,
+  "rejected_sequences": 4,
   "rejection_reasons": {
-    "excessive_missing_hands": 9
+    "excessive_missing_hands": 4
   },
   "removed_sequence_duplicates": 0,
-  "num_classes": 23,
+  "num_classes": 15,
   "sequence_shape": [
     30,
     128
   ],
-  "mean_missing_hand_ratio": 0.1725,
+  "mean_missing_hand_ratio": 0.1934,
   "mean_fps": 25.0,
   "splits": {
     "train": {
-      "num_samples": 280,
+      "num_samples": 174,
       "shape": [
-        280,
+        174,
         30,
         128
       ],
-      "classes_present": 23,
+      "classes_present": 15,
       "class_counts": {
-        "40. I": 15,
-        "41. you": 12,
-        "42. he": 14,
-        "43. she": 15,
-        "44. it": 12,
-        "45. we": 13,
-        "46. you (plural)": 11,
-        "47. they": 13,
         "48. Hello": 14,
-        "49. How are you": 14,
-        "50. Alright": 14,
-        "51. Good Morning": 14,
-        "52. Good afternoon": 11,
-        "53. Good evening": 15,
+        "49. How are you": 15,
+        "50. Alright": 13,
+        "51. Good Morning": 12,
+        "52. Good afternoon": 15,
+        "53. Good evening": 14,
         "54. Good night": 14,
         "55. Thank you": 14,
-        "56. Pleased": 14,
-        "61. Summer": 9,
-        "62. Spring": 10,
-        "63. Winter": 9,
-        "64. Fall": 5,
+        "56. Pleased": 13,
+        "61. Summer": 8,
+        "62. Spring": 8,
+        "63. Winter": 10,
+        "64. Fall": 7,
         "65. Season": 9,
-        "Ex. Monsoon": 9
+        "Ex. Monsoon": 8
       }
     },
     "validation": {
-      "num_samples": 79,
+      "num_samples": 50,
       "shape": [
-        79,
+        50,
         30,
         128
       ],
-      "classes_present": 23,
+      "classes_present": 15,
       "class_counts": {
-        "40. I": 3,
-        "41. you": 5,
-        "42. he": 4,
-        "43. she": 3,
-        "44. it": 4,
-        "45. we": 5,
-        "46. you (plural)": 4,
-        "47. they": 4,
-        "48. Hello": 4,
+        "48. Hello": 3,
         "49. How are you": 3,
         "50. Alright": 3,
-        "51. Good Morning": 3,
+        "51. Good Morning": 4,
         "52. Good afternoon": 4,
-        "53. Good evening": 3,
+        "53. Good evening": 4,
         "54. Good night": 4,
-        "55. Thank you": 3,
-        "56. Pleased": 4,
-        "61. Summer": 2,
-        "62. Spring": 2,
-        "63. Winter": 3,
-        "64. Fall": 4,
-        "65. Season": 3,
-        "Ex. Monsoon": 2
+        "55. Thank you": 4,
+        "56. Pleased": 5,
+        "61. Summer": 3,
+        "62. Spring": 3,
+        "63. Winter": 2,
+        "64. Fall": 2,
+        "65. Season": 2,
+        "Ex. Monsoon": 4
       }
     },
     "test": {
-      "num_samples": 75,
+      "num_samples": 47,
       "shape": [
-        75,
+        47,
         30,
         128
       ],
-      "classes_present": 23,
+      "classes_present": 15,
       "class_counts": {
-        "40. I": 3,
-        "41. you": 3,
-        "42. he": 3,
-        "43. she": 3,
-        "44. it": 4,
-        "45. we": 3,
-        "46. you (plural)": 4,
-        "47. they": 3,
-        "48. Hello": 3,
-        "49. How are you": 4,
-        "50. Alright": 4,
-        "51. Good Morning": 4,
-        "52. Good afternoon": 7,
+        "48. Hello": 4,
+        "49. How are you": 3,
+        "50. Alright": 5,
+        "51. Good Morning": 5,
+        "52. Good afternoon": 3,
         "53. Good evening": 3,
         "54. Good night": 3,
-        "55. Thank you": 4,
+        "55. Thank you": 3,
         "56. Pleased": 3,
         "61. Summer": 2,
-        "62. Spring": 2,
+        "62. Spring": 3,
         "63. Winter": 2,
         "64. Fall": 3,
-        "65. Season": 2,
-        "Ex. Monsoon": 3
+        "65. Season": 3,
+        "Ex. Monsoon": 2
       }
     }
   },
   "rejected_samples_log": [
-    {
-      "video_path": "Pronouns/41. you/MVI_0069.MOV",
-      "ok": false,
-      "reason": "excessive_missing_hands",
-      "missing_ratio": 0.7344,
-      "decoded_frames": 64
-    },
-    {
-      "video_path": "Pronouns/44. it/MVI_0077.MOV",
-      "ok": false,
-      "reason": "excessive_missing_hands",
-      "missing_ratio": 0.7059,
-      "decoded_frames": 68
-    },
-    {
-      "video_path": "Pronouns/46. you (plural)/MVI_0082.MOV",
-      "ok": false,
-      "reason": "excessive_missing_hands",
-      "missing_ratio": 0.8143,
-      "decoded_frames": 70
-    },
-    {
-      "video_path": "Pronouns/46. you (plural)/MVI_0083.MOV",
-      "ok": false,
-      "reason": "excessive_missing_hands",
-      "missing_ratio": 0.7564,
-      "decoded_frames": 78
-    },
-    {
-      "video_path": "Pronouns/47. they/MVI_0085.MOV",
-      "ok": false,
-      "reason": "excessive_missing_hands",
-      "missing_ratio": 0.75,
-      "decoded_frames": 68
-    },
     {
       "video_path": "Seasons/61. Summer/MVI_4990.MOV",
       "ok": false,

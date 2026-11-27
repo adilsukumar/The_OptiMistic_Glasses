@@ -1,0 +1,1334 @@
+[
+  {
+    "id": "namaste",
+    "english": "Namaste",
+    "hindi": "नमस्ते",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Namaste+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Both palms flat and open, fingers pressed together pointing straight upward (Anjali Mudra).",
+    "startPos": "In front of mid-chest, fingertips level with upper chest / chin.",
+    "palmOrientation": "Palms pressed firmly against each other, thumbs near the sternum.",
+    "movementDirection": "Hold steady at chest center, with a slight polite head nod.",
+    "phases": [
+      "chest_level",
+      "palms_touching",
+      "slight_bow"
+    ],
+    "instructions": [
+      "Bring both open hands in front of your chest.",
+      "Press your palms and fingers together flat, pointing straight up.",
+      "Hold hands centered at heart level and nod slightly to express greeting and respect."
+    ],
+    "avoid": "Do not separate the palms or keep fingers wide apart."
+  },
+  {
+    "id": "hello",
+    "english": "Hello",
+    "hindi": "हैलो / नमस्ते",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary / INCLUDE Dataset",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Hello+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Open flat palm, fingers together or naturally relaxed.",
+    "startPos": "Beside the temple / ear at head height.",
+    "palmOrientation": "Palm facing outward toward the observer / camera.",
+    "movementDirection": "Wave side-to-side gently 2 to 3 times, or touch temple and move outward.",
+    "phases": [
+      "temple_raise",
+      "wave_right",
+      "wave_left"
+    ],
+    "instructions": [
+      "Raise your dominant hand to ear / temple height.",
+      "Face your open palm directly toward the camera.",
+      "Perform a crisp, clear wave side to side or outward from the temple."
+    ],
+    "avoid": "Do not hide your fingers or wave outside the webcam field of view."
+  },
+  {
+    "id": "good-morning",
+    "english": "Good morning",
+    "hindi": "शुभ प्रभात",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary / INCLUDE Dataset",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Good+Morning+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Flat open dominant hand touching chin, then supporting non-dominant hand.",
+    "startPos": "Dominant fingertips touch chin, left hand near waist.",
+    "palmOrientation": "Dominant palm faces inward toward face, then forward.",
+    "movementDirection": "Move hand forward from chin ('Good'), then raise dominant forearm upward like the rising sun ('Morning').",
+    "phases": [
+      "chin_touch",
+      "hand_forward",
+      "arm_rise"
+    ],
+    "instructions": [
+      "Touch the fingertips of your dominant hand to your chin and bring it forward for 'Good'.",
+      "Place your left hand under your right elbow as a horizon line.",
+      "Raise your right forearm upward smoothly to represent the sun rising in the morning."
+    ],
+    "avoid": "Keep both arms clearly inside the frame during the rising motion."
+  },
+  {
+    "id": "good-evening",
+    "english": "Good evening",
+    "hindi": "शुभ संध्या",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary / INCLUDE Dataset",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Good+Evening+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Dominant flat hand touching chin, then lowering over horizontal base arm.",
+    "startPos": "Fingertips at chin ('Good'), non-dominant forearm horizontal.",
+    "palmOrientation": "Palm faces downward toward the base arm.",
+    "movementDirection": "Forward from chin, then arch dominant forearm gently downward like the setting sun.",
+    "phases": [
+      "chin_touch",
+      "hand_forward",
+      "arm_sunset"
+    ],
+    "instructions": [
+      "Sign 'Good' by touching your chin with flat fingertips and moving forward.",
+      "Hold your non-dominant arm horizontally in front of you.",
+      "Curve your dominant forearm downward toward the horizontal arm to signify evening."
+    ],
+    "avoid": "Do not drop hands below the bottom edge of the webcam."
+  },
+  {
+    "id": "goodbye",
+    "english": "Goodbye",
+    "hindi": "अलविदा",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Goodbye+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Open hand with fingers together, curling inward together rhythmically.",
+    "startPos": "Raised to shoulder / head height.",
+    "palmOrientation": "Palm facing toward the camera.",
+    "movementDirection": "Open and gently bend four fingers downward toward palm 2 times.",
+    "phases": [
+      "raise_hand",
+      "curl_fingers",
+      "open_fingers"
+    ],
+    "instructions": [
+      "Raise your dominant hand to chest or shoulder height.",
+      "Face your palm toward the person you are communicating with.",
+      "Gently bend and open your fingers in the standard farewell gesture."
+    ],
+    "avoid": "Do not wave erratically; keep the motion controlled."
+  },
+  {
+    "id": "how-are-you",
+    "english": "How are you?",
+    "hindi": "आप कैसे हैं?",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary / INCLUDE Dataset",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+How+are+you+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Both hands open, palms facing upward, slightly cupped.",
+    "startPos": "Held at mid-chest height, palms facing up, about 15 cm apart.",
+    "palmOrientation": "Palms facing upward toward ceiling.",
+    "movementDirection": "Tilt hands gently forward and outward in a questioning arc.",
+    "phases": [
+      "palms_up_chest",
+      "arc_forward",
+      "question_hold"
+    ],
+    "instructions": [
+      "Bring both hands in front of your mid-chest with open palms facing upward.",
+      "Move both hands slightly forward and tilt outward with an inquisitive facial expression.",
+      "Hold the open pose momentarily for the model to confirm."
+    ],
+    "avoid": "Keep both hands within camera view; do not flip palms downward."
+  },
+  {
+    "id": "i-am-fine",
+    "english": "I am fine",
+    "hindi": "मैं ठीक हूँ",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Fine+Alright+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Thumbs-up or open hand touching chest lightly, moving into confident OK gesture.",
+    "startPos": "In front of chest.",
+    "palmOrientation": "Thumb pointing straight up, fingers closed into fist.",
+    "movementDirection": "Firm downward or forward confirmation nod with the hand.",
+    "phases": [
+      "fist_chest",
+      "thumb_up",
+      "confirm_nod"
+    ],
+    "instructions": [
+      "Form a confident thumbs-up sign at chest level.",
+      "Move the hand slightly forward and nod your head in confirmation.",
+      "Express reassurance through a relaxed, positive posture."
+    ],
+    "avoid": "Do not obscure the thumb with other fingers."
+  },
+  {
+    "id": "what-is-your-name",
+    "english": "What is your name?",
+    "hindi": "आपका नाम क्या है?",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+What+is+your+name+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Point toward other person ('You'), 'H' or index tap on chest ('Name'), open palms ('What').",
+    "startPos": "Point forward toward conversational partner.",
+    "palmOrientation": "Index finger forward, then two fingers tapped together, then palms up.",
+    "movementDirection": "Sequential ISL phrase: YOU + NAME + WHAT.",
+    "phases": [
+      "point_you",
+      "name_tap",
+      "what_palms_up"
+    ],
+    "instructions": [
+      "First point index finger forward toward the person ('You').",
+      "Touch index and middle finger of dominant hand to the other hand across chest ('Name').",
+      "Turn both palms upward with raised eyebrows ('What?')."
+    ],
+    "avoid": "Do not rush; perform each sign clearly in sequence."
+  },
+  {
+    "id": "my-name-is",
+    "english": "My name is...",
+    "hindi": "मेरा नाम ... है",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+My+name+is+Indian+Sign+Language",
+    "hands": "1 or 2 Hands",
+    "handshape": "Flat hand on chest ('My'), followed by two fingers crossed / tapped ('Name'), then finger-spelling.",
+    "startPos": "Open flat palm touching center of your chest.",
+    "palmOrientation": "Palm facing your chest.",
+    "movementDirection": "Tap chest ('My'), sign 'Name', then spell initial letters using ISL finger alphabet.",
+    "phases": [
+      "my_chest",
+      "name_sign",
+      "spelling_intro"
+    ],
+    "instructions": [
+      "Touch your own chest with an open flat palm ('My').",
+      "Tap your index and middle fingers together to sign 'Name'.",
+      "Follow with your ISL finger-spelled name."
+    ],
+    "avoid": "Keep finger spelling at shoulder height."
+  },
+  {
+    "id": "nice-to-meet-you",
+    "english": "Nice to meet you",
+    "hindi": "आपसे मिलकर अच्छा लगा",
+    "category": "Greetings & Everyday Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Nice+to+meet+you+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Circular rubbing on chest ('Pleased / Good'), then both index fingers coming together ('Meet').",
+    "startPos": "Right hand on chest, then both hands with index fingers extended pointing upward.",
+    "palmOrientation": "Palms facing each other during the meet phase.",
+    "movementDirection": "Rub chest circle, then bring index fingers together until knuckles touch.",
+    "phases": [
+      "pleased_chest",
+      "index_separate",
+      "index_touch_meet"
+    ],
+    "instructions": [
+      "Place open palm on chest and rub clockwise once ('Pleased / Good').",
+      "Raise both hands with index fingers extended pointing upward.",
+      "Bring both index fingers together until they touch, signifying two people meeting."
+    ],
+    "avoid": "Ensure index fingers touch in the center of the camera frame."
+  },
+  {
+    "id": "yes",
+    "english": "Yes",
+    "hindi": "हाँ",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Yes+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Closed fist with thumb rested against fingers, knuckles facing forward.",
+    "startPos": "In front of chest / shoulder height.",
+    "palmOrientation": "Knuckles facing forward toward camera.",
+    "movementDirection": "Nod the entire fist up and down from the wrist 2 times like a head nodding yes.",
+    "phases": [
+      "fist_up",
+      "nod_down",
+      "nod_up"
+    ],
+    "instructions": [
+      "Make a loose fist with your dominant hand at chest height.",
+      "Face your knuckles forward toward the webcam.",
+      "Bend your wrist up and down twice in a crisp nodding motion."
+    ],
+    "avoid": "Do not move the whole arm; the nod should come cleanly from the wrist."
+  },
+  {
+    "id": "no",
+    "english": "No",
+    "hindi": "नहीं",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+No+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Index and middle fingers extended together with thumb extended; fingers snap shut against thumb, or index finger wags side-to-side.",
+    "startPos": "At chest or shoulder height.",
+    "palmOrientation": "Palm facing toward left/center.",
+    "movementDirection": "Snap index and middle finger tips quickly onto the thumb tip, or shake index finger side-to-side.",
+    "phases": [
+      "fingers_open",
+      "snap_to_thumb",
+      "hold_closed"
+    ],
+    "instructions": [
+      "Extend your index and middle fingers together, with thumb pointing outward.",
+      "Snap the index and middle fingertips quickly down onto your thumb.",
+      "Accompany with a gentle head shake to convey negative agreement."
+    ],
+    "avoid": "Do not keep pinky or ring fingers extended."
+  },
+  {
+    "id": "please",
+    "english": "Please",
+    "hindi": "कृपया",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Please+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Open flat palm, fingers together.",
+    "startPos": "Resting flat against the center of your chest.",
+    "palmOrientation": "Palm flat against the chest.",
+    "movementDirection": "Rub in a smooth circular motion on the chest 2 to 3 times clockwise.",
+    "phases": [
+      "palm_chest",
+      "circle_up",
+      "circle_down"
+    ],
+    "instructions": [
+      "Place your open flat hand against the center of your chest.",
+      "Keep fingers straight and held together.",
+      "Move your hand in a gentle circular clockwise rubbing motion over your heart."
+    ],
+    "avoid": "Do not lift palm away from chest during the circle."
+  },
+  {
+    "id": "thank-you",
+    "english": "Thank you",
+    "hindi": "धन्यवाद",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary / INCLUDE Dataset",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Thank+you+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Flat open hand, fingers straight and pressed together.",
+    "startPos": "Fingertips lightly touching your chin or lower lip.",
+    "palmOrientation": "Palm facing inward toward face.",
+    "movementDirection": "Move the hand smoothly forward and slightly downward toward the camera.",
+    "phases": [
+      "touch_chin",
+      "move_forward",
+      "open_gratitude"
+    ],
+    "instructions": [
+      "Touch the tips of your flat fingers to your chin or lips.",
+      "Move the hand straight forward in a smooth extending gesture toward the other person.",
+      "Keep your palm angled slightly upward as you finish the forward motion."
+    ],
+    "avoid": "Do not wave side-to-side; the motion is direct and forward."
+  },
+  {
+    "id": "sorry",
+    "english": "Sorry",
+    "hindi": "माफ़ कीजिये",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Sorry+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Fist with thumb across fingers ('A' handshape).",
+    "startPos": "Center of chest over heart.",
+    "palmOrientation": "Knuckles facing outward, thumb side against chest.",
+    "movementDirection": "Rub in a small circular motion on the chest.",
+    "phases": [
+      "fist_on_chest",
+      "circle_motion",
+      "apology_posture"
+    ],
+    "instructions": [
+      "Make a closed fist with your dominant hand.",
+      "Place your fist flat against the center of your chest.",
+      "Rub in small circular motions while adopting an apologetic facial expression."
+    ],
+    "avoid": "Keep fist on the chest; do not swing your elbow wildly."
+  },
+  {
+    "id": "welcome",
+    "english": "Welcome",
+    "hindi": "स्वागत है",
+    "category": "Basic Communication",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Welcome+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Open flat hands, palms facing up, curved inward.",
+    "startPos": "Extended slightly outward to the sides.",
+    "palmOrientation": "Palms facing upward and inward.",
+    "movementDirection": "Sweep both hands inward toward your body in an inviting gesture.",
+    "phases": [
+      "hands_outward",
+      "sweep_inward",
+      "inviting_hold"
+    ],
+    "instructions": [
+      "Hold both open hands slightly outward in front of you with palms facing up.",
+      "Sweep both hands inward smoothly toward your chest to welcome the guest.",
+      "Accompany with a warm, welcoming smile."
+    ],
+    "avoid": "Do not drop hands below camera view."
+  },
+  {
+    "id": "wait",
+    "english": "Wait",
+    "hindi": "रुकिए / प्रतीक्षा करें",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Wait+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Open palm held upright facing forward, fingers spread slightly.",
+    "startPos": "Chest to shoulder height, arm bent.",
+    "palmOrientation": "Palm facing directly toward camera.",
+    "movementDirection": "Hold steady, with subtle finger flexion or gentle downward pulse.",
+    "phases": [
+      "raise_palm",
+      "face_forward",
+      "pulse_hold"
+    ],
+    "instructions": [
+      "Raise your dominant hand with palm facing outward toward the camera.",
+      "Keep fingers pointing straight up.",
+      "Hold steady for 1 second to signal 'Wait / Hold on'."
+    ],
+    "avoid": "Do not tilt palm sideways."
+  },
+  {
+    "id": "stop",
+    "english": "Stop",
+    "hindi": "रुकिए / बंद करें",
+    "category": "Basic Communication",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Stop+Indian+Sign+Language",
+    "hands": "1 or 2 Hands",
+    "handshape": "Firm vertical open flat palm pushed forward, or dominant flat hand brought down sharply on open non-dominant palm.",
+    "startPos": "In front of chest.",
+    "palmOrientation": "Palm flat and facing forward.",
+    "movementDirection": "Decisive forward push or sharp chop down onto non-dominant palm.",
+    "phases": [
+      "hand_back",
+      "firm_push_stop",
+      "freeze_hold"
+    ],
+    "instructions": [
+      "Raise your dominant hand with palm facing outward toward the camera.",
+      "Push hand forward firmly and hold still to signal an immediate stop.",
+      "Alternatively, bring your dominant hand edge down firmly onto your open left palm."
+    ],
+    "avoid": "Do not wave; the gesture is abrupt and authoritative."
+  },
+  {
+    "id": "come-here",
+    "english": "Come here",
+    "hindi": "यहाँ आइए",
+    "category": "Basic Communication",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Come+here+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Open hand with palm facing inward or downward, fingers waving inward toward body.",
+    "startPos": "Extended forward in front of chest.",
+    "palmOrientation": "Palm facing inward or downward.",
+    "movementDirection": "Curl fingers inward toward your chest repeatedly.",
+    "phases": [
+      "arm_extended",
+      "curl_fingers_in",
+      "beckon_repeat"
+    ],
+    "instructions": [
+      "Extend your hand forward at chest height with palm facing inward or down.",
+      "Curl your fingers repeatedly toward yourself to beckon the person.",
+      "Keep motion smooth and polite."
+    ],
+    "avoid": "Do not gesture aggressively."
+  },
+  {
+    "id": "listen",
+    "english": "Listen",
+    "hindi": "सुनिए / ध्यान दें",
+    "category": "Basic Communication",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Listen+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Cupped hand or index finger pointing to ear.",
+    "startPos": "Near the ear.",
+    "palmOrientation": "Cupped palm behind ear, or index tapping earlobe.",
+    "movementDirection": "Hold cupped hand behind ear or tap earlobe 2 times.",
+    "phases": [
+      "hand_to_ear",
+      "cup_ear",
+      "listen_hold"
+    ],
+    "instructions": [
+      "Bring your dominant hand up to the side of your ear.",
+      "Cup your hand slightly behind the ear or tap your ear with your index finger.",
+      "Look toward the speaker to show active listening."
+    ],
+    "avoid": "Do not cover your ear completely."
+  },
+  {
+    "id": "help-me",
+    "english": "Help me",
+    "hindi": "मेरी मदद करो",
+    "category": "Needs & Emergency",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Help+me+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Non-dominant flat open palm facing upward; dominant hand forms a thumbs-up fist resting on top.",
+    "startPos": "Held together at lower chest height.",
+    "palmOrientation": "Left palm facing up; right fist resting on left palm.",
+    "movementDirection": "Lift both hands together upward and inward toward yourself.",
+    "phases": [
+      "base_palm_open",
+      "fist_on_palm",
+      "lift_together_inward"
+    ],
+    "instructions": [
+      "Hold your non-dominant hand flat in front of your chest with palm facing upward.",
+      "Place your dominant hand in a thumbs-up shape directly on top of the open palm.",
+      "Lift both hands together upward toward your chest to ask for help."
+    ],
+    "avoid": "Keep both hands joined together as they lift."
+  },
+  {
+    "id": "i-need-water",
+    "english": "I need water",
+    "hindi": "मुझे पानी चाहिए",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Water+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Dominant hand cupped like holding a glass, or 'W' handshape tapping chin.",
+    "startPos": "Hand near mouth / chin.",
+    "palmOrientation": "Palm facing toward mouth.",
+    "movementDirection": "Tilt cupped hand toward mouth like drinking water.",
+    "phases": [
+      "cup_hand",
+      "tilt_to_mouth",
+      "sip_gesture"
+    ],
+    "instructions": [
+      "Cup your dominant hand as if holding a small glass of water.",
+      "Bring it up to your mouth and tilt your hand slightly as if drinking.",
+      "Optionally point to yourself to emphasize 'I need'."
+    ],
+    "avoid": "Do not block your face completely from camera view."
+  },
+  {
+    "id": "i-am-hungry",
+    "english": "I am hungry",
+    "hindi": "मुझे भूख लगी है",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Hungry+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "All fingertips brought together into a point ('eating' mudra) and brought toward mouth, or flat hand rubbing stomach.",
+    "startPos": "Fingertips together in front of chest.",
+    "palmOrientation": "Fingertips pointing toward mouth / stomach.",
+    "movementDirection": "Touch fingertips toward mouth 2 times, then rub stomach.",
+    "phases": [
+      "fingertips_together",
+      "touch_mouth",
+      "rub_stomach"
+    ],
+    "instructions": [
+      "Bring all five fingertips of your dominant hand together in the traditional Indian food/eating gesture.",
+      "Move them toward your lips twice ('Eat/Food').",
+      "Rub your stomach gently to indicate hunger."
+    ],
+    "avoid": "Ensure hand does not obscure the webcam view."
+  },
+  {
+    "id": "i-am-thirsty",
+    "english": "I am thirsty",
+    "hindi": "मुझे प्यास लगी है",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Thirsty+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Index finger extended.",
+    "startPos": "Tip of index finger touching throat / Adam's apple.",
+    "palmOrientation": "Finger pointing toward throat.",
+    "movementDirection": "Trace index finger down your throat from neck to clavicle.",
+    "phases": [
+      "touch_throat",
+      "trace_down",
+      "water_cup"
+    ],
+    "instructions": [
+      "Place your index finger at the top of your throat.",
+      "Draw it downward in a straight line to signify dryness in the throat.",
+      "Follow with the drinking gesture to communicate thirst clearly."
+    ],
+    "avoid": "Keep your neck and upper chest visible in camera."
+  },
+  {
+    "id": "i-am-tired",
+    "english": "I am tired",
+    "hindi": "मैं थक गया हूँ",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Tired+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Bent hands with fingertips resting on chest / shoulders.",
+    "startPos": "Fingertips resting lightly on upper chest near shoulders.",
+    "palmOrientation": "Palms facing your body.",
+    "movementDirection": "Allow wrists and elbows to drop downward while shoulders slump.",
+    "phases": [
+      "fingertips_chest",
+      "drop_wrists",
+      "slump_shoulders"
+    ],
+    "instructions": [
+      "Touch the fingertips of both curved hands to your upper chest.",
+      "Drop your hands and wrists downward heavily in a release of energy.",
+      "Let your shoulders drop slightly to mirror fatigue."
+    ],
+    "avoid": "Do not let hands drop completely out of view."
+  },
+  {
+    "id": "i-need-help",
+    "english": "I need help",
+    "hindi": "मुझे सहायता चाहिए",
+    "category": "Needs & Emergency",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Help+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Open flat left hand supporting thumbs-up right fist, pulled inward toward self.",
+    "startPos": "Chest level.",
+    "palmOrientation": "Base palm facing up.",
+    "movementDirection": "Lift both hands together toward your chest urgently.",
+    "phases": [
+      "base_palm",
+      "thumbs_up_rest",
+      "pull_toward_self"
+    ],
+    "instructions": [
+      "Place your thumbs-up right hand upon your flat open left hand.",
+      "Draw both hands firmly toward your chest.",
+      "Use an urgent facial expression to convey the need for assistance."
+    ],
+    "avoid": "Keep fists steady on the base palm."
+  },
+  {
+    "id": "i-am-in-pain",
+    "english": "I am in pain",
+    "hindi": "मुझे दर्द हो रहा है",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Pain+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Both index fingers extended pointing toward each other.",
+    "startPos": "Near the area of pain, or in front of chest.",
+    "palmOrientation": "Index tips pointing directly toward each other without touching.",
+    "movementDirection": "Jab index fingers toward each other with a twisting, sharp pulse.",
+    "phases": [
+      "index_facing",
+      "jab_inward",
+      "twist_pulse"
+    ],
+    "instructions": [
+      "Extend both index fingers pointing toward each other ~10 cm apart.",
+      "Twist and jab them inward toward each other sharply.",
+      "Winced facial expression communicates pain intensity."
+    ],
+    "avoid": "Keep the twist crisp and centered in frame."
+  },
+  {
+    "id": "call-a-doctor",
+    "english": "Call a doctor",
+    "hindi": "डॉक्टर को बुलाओ",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Doctor+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Index and middle fingers of right hand tapping inside of left wrist (checking pulse), followed by telephone hand at ear.",
+    "startPos": "Left arm extended forward.",
+    "palmOrientation": "Left palm facing up; right fingers tapping pulse.",
+    "movementDirection": "Tap wrist pulse 2 times, then raise 'phone' hand (thumb and pinky extended) to ear.",
+    "phases": [
+      "wrist_pulse_tap",
+      "phone_to_ear",
+      "urgent_look"
+    ],
+    "instructions": [
+      "Hold left wrist forward with palm facing up.",
+      "Tap the inside of your left wrist with two fingers of your right hand as if feeling a pulse ('Doctor').",
+      "Hold thumb and pinky out to your ear ('Call / Telephone')."
+    ],
+    "avoid": "Keep both the wrist tap and phone sign visible in sequence."
+  },
+  {
+    "id": "emergency",
+    "english": "Emergency",
+    "hindi": "आपातकाल",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Emergency+Indian+Sign+Language",
+    "hands": "1 or 2 Hands",
+    "handshape": "'E' handshape or open hands waving rapidly back and forth in front of chest.",
+    "startPos": "Chest height.",
+    "palmOrientation": "Palms facing forward / out.",
+    "movementDirection": "Rapid urgent shaking back and forth to indicate crisis.",
+    "phases": [
+      "hands_up_urgent",
+      "shake_rapid",
+      "alert_posture"
+    ],
+    "instructions": [
+      "Raise both hands to chest height with an alert posture.",
+      "Shake hands urgently back and forth while signaling distress.",
+      "Direct attention to the emergency situation immediately."
+    ],
+    "avoid": "Do not sign calmly; speed and urgency are key."
+  },
+  {
+    "id": "please-call-someone",
+    "english": "Please call someone",
+    "hindi": "कृपया किसी को बुलाएँ",
+    "category": "Needs & Emergency",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Call+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Thumb and pinky extended ('telephone' shape), placed at ear, then gesturing outward.",
+    "startPos": "Beside ear.",
+    "palmOrientation": "Palm facing toward ear.",
+    "movementDirection": "Hold phone shape at ear, then point outward to ask someone to dial.",
+    "phases": [
+      "phone_ear",
+      "point_outward",
+      "pleading_expression"
+    ],
+    "instructions": [
+      "Form the telephone sign with your thumb at your ear and pinky near your mouth.",
+      "Point toward the other person or phone with an appealing expression.",
+      "Sign 'Please' by rubbing chest if time permits."
+    ],
+    "avoid": "Make sure the hand shape is recognizable."
+  },
+  {
+    "id": "i-am-happy",
+    "english": "I am happy",
+    "hindi": "मैं खुश हूँ",
+    "category": "Feelings",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Happy+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Open flat hands, palms facing chest.",
+    "startPos": "In front of chest.",
+    "palmOrientation": "Palms facing inward toward chest.",
+    "movementDirection": "Brush upward against chest repeatedly in gentle fluttering strokes.",
+    "phases": [
+      "palms_chest",
+      "brush_upward",
+      "smile_flutter"
+    ],
+    "instructions": [
+      "Place both open hands in front of your chest with palms facing your body.",
+      "Brush your hands upward in buoyant repeated motions.",
+      "Pair with a wide, genuine smile to reflect the emotion."
+    ],
+    "avoid": "Do not brush downward; happy signs always move upward."
+  },
+  {
+    "id": "i-am-sad",
+    "english": "I am sad",
+    "hindi": "मैं उदास हूँ",
+    "category": "Feelings",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Sad+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Open curved hands, fingers slightly spread.",
+    "startPos": "In front of face.",
+    "palmOrientation": "Palms facing your face.",
+    "movementDirection": "Draw hands slowly downward in front of face like tears or a heavy heart.",
+    "phases": [
+      "hands_at_face",
+      "draw_downward",
+      "somber_expression"
+    ],
+    "instructions": [
+      "Hold both open hands in front of your face with palms facing inward.",
+      "Slowly draw them downward past your chin while tilting your head slightly down.",
+      "Adopt a somber, sad facial expression."
+    ],
+    "avoid": "Keep the downward motion slow and deliberate."
+  },
+  {
+    "id": "i-am-scared",
+    "english": "I am scared",
+    "hindi": "मुझे डर लग रहा है",
+    "category": "Feelings",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Scared+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Open hands spreading rapidly from fists in front of chest.",
+    "startPos": "Both fists held near chest.",
+    "palmOrientation": "Palms facing chest.",
+    "movementDirection": "Open hands suddenly with trembling or shivering motion.",
+    "phases": [
+      "fists_chest",
+      "burst_open",
+      "tremble_recoil"
+    ],
+    "instructions": [
+      "Hold both fists in front of your chest.",
+      "Snap them open suddenly with trembling fingers as if startled.",
+      "Pull hands back slightly toward your body in recoil."
+    ],
+    "avoid": "Facial expression is essential: wide eyes and open mouth."
+  },
+  {
+    "id": "i-am-angry",
+    "english": "I am angry",
+    "hindi": "मुझे गुस्सा आ रहा है",
+    "category": "Feelings",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Angry+Indian+Sign+Language",
+    "hands": "1 or 2 Hands",
+    "handshape": "Clawed hand with bent, tense fingers.",
+    "startPos": "In front of stomach / lower chest.",
+    "palmOrientation": "Palm facing inward.",
+    "movementDirection": "Pull clawed hand sharply upward toward chest/neck as if rage is boiling up.",
+    "phases": [
+      "claw_lower",
+      "rip_upward",
+      "furrow_brow"
+    ],
+    "instructions": [
+      "Form a tense claw shape with your dominant hand.",
+      "Start at your stomach and pull the claw sharply upward toward your chest.",
+      "Furrow your eyebrows and clench your jaw to convey anger."
+    ],
+    "avoid": "Do not keep fingers limp or relaxed."
+  },
+  {
+    "id": "i-love-you",
+    "english": "I love you",
+    "hindi": "मैं तुमसे प्यार करता हूँ",
+    "category": "Feelings",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+I+Love+You+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Thumb, index finger, and pinky finger extended; middle and ring fingers folded into palm (🤟).",
+    "startPos": "At chest or shoulder height.",
+    "palmOrientation": "Palm facing directly toward camera.",
+    "movementDirection": "Hold steady in front of you, or push slightly forward with affection.",
+    "phases": [
+      "extend_ily",
+      "hold_palm_forward",
+      "slight_push"
+    ],
+    "instructions": [
+      "Extend your thumb, index finger, and pinky finger upright simultaneously.",
+      "Fold your middle and ring fingers flat against your palm.",
+      "Hold your hand steady facing the webcam at shoulder height."
+    ],
+    "avoid": "Do not bend the pinky or index finger; all three extended digits must be straight."
+  },
+  {
+    "id": "i-dont-understand",
+    "english": "I don't understand",
+    "hindi": "मुझे समझ नहीं आया",
+    "category": "Feelings",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Don%27t+understand+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Index finger flicks upward near temple, followed by head shake.",
+    "startPos": "Near forehead / temple.",
+    "palmOrientation": "Palm facing inward.",
+    "movementDirection": "Flick index finger upward off thumb, then shake head.",
+    "phases": [
+      "finger_temple",
+      "flick_off",
+      "shake_head"
+    ],
+    "instructions": [
+      "Place your index finger near your forehead.",
+      "Flick the finger upward and shake your head from side to side.",
+      "Express a puzzled look on your face."
+    ],
+    "avoid": "Make the head shake clear to distinguish from 'I understand'."
+  },
+  {
+    "id": "i-understand",
+    "english": "I understand",
+    "hindi": "मैं समझ गया",
+    "category": "Feelings",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Understand+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Fist with index finger flicking up near temple, followed by affirmative head nod.",
+    "startPos": "Near temple / forehead.",
+    "palmOrientation": "Palm facing inward.",
+    "movementDirection": "Flick index finger upright like a lightbulb turning on, then nod.",
+    "phases": [
+      "fist_temple",
+      "flick_up_bulb",
+      "nod_yes"
+    ],
+    "instructions": [
+      "Hold a loose fist near your temple.",
+      "Flick your index finger straight up as if an idea just appeared.",
+      "Nod your head affirmatively to confirm understanding."
+    ],
+    "avoid": "Do not shake your head."
+  },
+  {
+    "id": "what-are-you-doing",
+    "english": "What are you doing?",
+    "hindi": "आप क्या कर रहे हैं?",
+    "category": "Daily Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+What+are+you+doing+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Both hands open, palms facing up, thumbs and fingers wiggling or pinching in question.",
+    "startPos": "In front of chest.",
+    "palmOrientation": "Palms facing upward toward ceiling.",
+    "movementDirection": "Bend and wiggle fingers rhythmically with questioning eyebrows.",
+    "phases": [
+      "palms_up_chest",
+      "wiggle_fingers",
+      "inquisitive_hold"
+    ],
+    "instructions": [
+      "Hold both hands in front of your mid-chest with palms facing up.",
+      "Wiggle your fingers or pinch your index and thumb rhythmically.",
+      "Raise your eyebrows in a friendly inquiring question."
+    ],
+    "avoid": "Keep both hands centered inside the frame."
+  },
+  {
+    "id": "where-are-you-going",
+    "english": "Where are you going?",
+    "hindi": "आप कहाँ जा रहे हैं?",
+    "category": "Daily Conversation",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Where+are+you+going+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Index finger pointing forward and moving away ('Go'), then open palms facing up ('Where?').",
+    "startPos": "In front of chest.",
+    "palmOrientation": "Index pointing forward, then palms up.",
+    "movementDirection": "Arc index finger forward away from body, then tilt open palms side to side.",
+    "phases": [
+      "index_go_forward",
+      "palms_up_where",
+      "question_brows"
+    ],
+    "instructions": [
+      "Point your dominant index finger forward and move it away from your body ('Go').",
+      "Turn both open hands palms-up and tilt them side-to-side ('Where?').",
+      "Look in the direction of the inquiry."
+    ],
+    "avoid": "Keep movement fluid between the two components."
+  },
+  {
+    "id": "i-want-to-go-home",
+    "english": "I want to go home",
+    "hindi": "मुझे घर जाना है",
+    "category": "Daily Conversation",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Home+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Both hands open, fingertips touching at an angle forming a roof shape ('Home').",
+    "startPos": "In front of upper chest.",
+    "palmOrientation": "Palms angled toward each other, fingertips touching like a roof.",
+    "movementDirection": "Form the roof shape of a house, then gesture forward to go.",
+    "phases": [
+      "roof_fingertips",
+      "hold_home",
+      "gesture_forward"
+    ],
+    "instructions": [
+      "Touch the fingertips of both hands together at an angle to create the roof of a house ('Home').",
+      "Hold the roof shape firmly in center frame.",
+      "Move hand forward to indicate 'Want to go'."
+    ],
+    "avoid": "Do not let palms collapse flat against each other; maintain the peaked roof."
+  },
+  {
+    "id": "can-you-help-me",
+    "english": "Can you help me?",
+    "hindi": "क्या आप मेरी मदद कर सकते हैं?",
+    "category": "Daily Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Help+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Thumbs-up right hand on open flat left hand, lifted inward with questioning facial expression.",
+    "startPos": "In front of mid-chest.",
+    "palmOrientation": "Left palm facing up; right fist on top.",
+    "movementDirection": "Lift both hands together inward toward chest with raised eyebrows.",
+    "phases": [
+      "fist_on_palm",
+      "lift_inward",
+      "questioning_brows"
+    ],
+    "instructions": [
+      "Place your thumbs-up dominant hand onto your flat open base palm.",
+      "Lift both hands toward yourself while raising your eyebrows inquiringly.",
+      "Hold briefly for recognition."
+    ],
+    "avoid": "Keep hands steady and centered."
+  },
+  {
+    "id": "please-repeat",
+    "english": "Please repeat",
+    "hindi": "कृपया दोहराएँ",
+    "category": "Daily Conversation",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Again+Repeat+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Right hand bent at right angle, arcing over and landing into left open palm ('Again / Repeat').",
+    "startPos": "Left hand open flat; right hand poised above.",
+    "palmOrientation": "Left palm up; right palm facing left.",
+    "movementDirection": "Arc right hand up and down firmly into center of left palm.",
+    "phases": [
+      "hand_poised",
+      "arc_down",
+      "land_on_palm"
+    ],
+    "instructions": [
+      "Hold your non-dominant hand flat with palm facing up.",
+      "Curve your dominant hand and bring it down into the open palm repeatedly ('Again / Repeat').",
+      "Polite expression signals request to repeat."
+    ],
+    "avoid": "Ensure the landing into the palm is visible."
+  },
+  {
+    "id": "i-need-to-use-the-bathroom",
+    "english": "I need to use the bathroom",
+    "hindi": "मुझे शौचालय जाना है",
+    "category": "Daily Conversation",
+    "isSupported": false,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Toilet+Bathroom+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "'T' handshape (thumb tucked between index and middle fingers) shaken side to side, or little finger held up.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Knuckles facing forward.",
+    "movementDirection": "Shake 'T' handshape side to side gently.",
+    "phases": [
+      "form_t_shape",
+      "shake_side_to_side",
+      "hold_request"
+    ],
+    "instructions": [
+      "Form a fist with your thumb poking out between your index and middle fingers ('T' for toilet).",
+      "Shake your hand gently side to side at shoulder height.",
+      "Alternatively, hold pinky finger extended (common Indian classroom sign for restroom)."
+    ],
+    "avoid": "Keep hand clearly in view of camera."
+  },
+  {
+    "id": "i-am-okay",
+    "english": "I am okay",
+    "hindi": "मैं ठीक हूँ",
+    "category": "Daily Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Fine+Okay+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "OK handshape (index and thumb forming a circle, other three fingers upright) or thumbs-up.",
+    "startPos": "In front of chest / shoulder height.",
+    "palmOrientation": "Palm facing toward camera.",
+    "movementDirection": "Hold the OK sign steady or give a reassuring nod.",
+    "phases": [
+      "form_ok_circle",
+      "raise_fingers",
+      "confirm_smile"
+    ],
+    "instructions": [
+      "Join the tips of your thumb and index finger into a circle.",
+      "Keep your middle, ring, and pinky fingers spread upright.",
+      "Hold the sign facing the camera with a reassuring smile."
+    ],
+    "avoid": "Do not let the other three fingers collapse into your palm."
+  },
+  {
+    "id": "i-am-a-boy",
+    "english": "I am a boy",
+    "hindi": "मैं एक लड़का हूँ",
+    "category": "Identity & Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Boy+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Cap visor / brim shape: Index and thumb curved near forehead temple.",
+    "startPos": "Dominant hand at forehead / temple height.",
+    "palmOrientation": "Palm facing downward / inward towards temple.",
+    "movementDirection": "Hold near temple like gripping the brim of a cap (traditional sign for Boy).",
+    "phases": [
+      "temple_touch",
+      "visor_hold"
+    ],
+    "instructions": [
+      "Raise dominant hand to forehead / temple level.",
+      "Touch or hold index and thumb near the temple like touching a cap visor.",
+      "Hold steady for visual recognition."
+    ],
+    "avoid": "Do not drop hand below chin height."
+  },
+  {
+    "id": "i-am-a-girl",
+    "english": "I am a girl",
+    "hindi": "मैं एक लड़की हूँ",
+    "category": "Identity & Conversation",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Girl+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Index finger extended, other fingers gently curled.",
+    "startPos": "Index fingertip touching cheek or tracing jawline (referencing earring).",
+    "palmOrientation": "Palm facing inward towards face.",
+    "movementDirection": "Touch or trace index fingertip along the cheek or earlobe.",
+    "phases": [
+      "cheek_touch",
+      "jawline_trace"
+    ],
+    "instructions": [
+      "Extend index finger while folding remaining fingers.",
+      "Touch or trace index finger along your cheek or near earlobe.",
+      "Hold clearly beside face for camera detection."
+    ],
+    "avoid": "Do not block your face or mouth from the camera."
+  },
+  {
+    "id": "one",
+    "english": "One (1)",
+    "hindi": "एक",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+1+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Index finger pointing straight UP, other fingers curled into palm.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Palm facing outward toward camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "index_up"
+    ],
+    "instructions": [
+      "Extend your index finger straight up.",
+      "Keep thumb and other three fingers closed into your palm.",
+      "Hold upright at chest height."
+    ],
+    "avoid": "Do not extend the middle finger."
+  },
+  {
+    "id": "two",
+    "english": "Two (2)",
+    "hindi": "दो",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+2+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Index and Middle fingers UP in a V shape.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Palm facing outward toward camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "v_shape"
+    ],
+    "instructions": [
+      "Extend your index and middle fingers upward in a clear V shape.",
+      "Keep ring and pinky fingers curled tightly with thumb.",
+      "Hold in front of camera."
+    ],
+    "avoid": "Do not hide either finger behind the other."
+  },
+  {
+    "id": "three",
+    "english": "Three (3)",
+    "hindi": "तीन",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+3+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Thumb extended outward, Index and Middle fingers UP.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Palm facing outward toward camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "three_fingers"
+    ],
+    "instructions": [
+      "Extend thumb outward and raise index and middle fingers.",
+      "Keep ring and pinky fingers folded into palm.",
+      "Hold upright in camera."
+    ],
+    "avoid": "Do not curl thumb back in."
+  },
+  {
+    "id": "four",
+    "english": "Four (4)",
+    "hindi": "चार",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+4+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Four fingers (Index, Middle, Ring, Pinky) UP, thumb tucked into palm.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Palm facing outward toward camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "four_fingers"
+    ],
+    "instructions": [
+      "Extend all four fingers (index, middle, ring, pinky) straight up.",
+      "Tuck thumb across palm.",
+      "Hold steady at chest level."
+    ],
+    "avoid": "Do not extend thumb."
+  },
+  {
+    "id": "five",
+    "english": "Five (5)",
+    "hindi": "पाँच",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+5+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "All five fingers extended and spread open.",
+    "startPos": "Chest level.",
+    "palmOrientation": "Palm facing outward toward camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "open_five"
+    ],
+    "instructions": [
+      "Open all five fingers wide and spread at chest level.",
+      "Face palm directly toward the camera.",
+      "Hold steady for instant counting translation."
+    ],
+    "avoid": "Do not raise to ear level (which means Hello)."
+  },
+  {
+    "id": "six",
+    "english": "Six (6)",
+    "hindi": "छह",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+6+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Pinky finger extended UP only, other four fingers curled.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Palm facing camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "pinky_up"
+    ],
+    "instructions": [
+      "Raise only your pinky finger straight up.",
+      "Fold index, middle, ring, and thumb into a fist.",
+      "Hold upright clearly."
+    ],
+    "avoid": "Do not let index finger rise."
+  },
+  {
+    "id": "seven",
+    "english": "Seven (7)",
+    "hindi": "सात",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+7+Indian+Sign+Language",
+    "hands": "1 Hand",
+    "handshape": "Thumb OUT and Index UP forming an L shape.",
+    "startPos": "Chest / shoulder height.",
+    "palmOrientation": "Palm facing camera.",
+    "movementDirection": "Hold steady.",
+    "phases": [
+      "l_shape"
+    ],
+    "instructions": [
+      "Extend index finger upward and thumb outward to form an L shape.",
+      "Fold other three fingers into palm.",
+      "Hold steady at chest level."
+    ],
+    "avoid": "Do not raise middle finger."
+  },
+  {
+    "id": "ten",
+    "english": "Ten (10)",
+    "hindi": "दस",
+    "category": "Counting & Numbers",
+    "isSupported": true,
+    "source": "ISLRTC Official Indian Sign Language Dictionary",
+    "videoUrl": "https://www.youtube.com/results?search_query=ISLRTC+Number+10+Indian+Sign+Language",
+    "hands": "2 Hands",
+    "handshape": "Both open hands showing 5 + 5 spread fingers.",
+    "startPos": "Both hands at chest level.",
+    "palmOrientation": "Both palms facing outward toward camera.",
+    "movementDirection": "Hold steady side-by-side.",
+    "phases": [
+      "dual_fives"
+    ],
+    "instructions": [
+      "Raise both hands at chest level.",
+      "Open all fingers on both hands (5 + 5 = 10).",
+      "Hold clearly in camera view."
+    ],
+    "avoid": "Do not overlap hands."
+  }
+]
