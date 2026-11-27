@@ -1,0 +1,294 @@
+{
+  "dataset_id": "ai4bharat/INCLUDE",
+  "license": "CC-BY-4.0",
+  "hf_metadata_summary": {
+    "hf_raw_split_counts": {
+      "train": 3816,
+      "val": 425,
+      "test": 1009
+    },
+    "hf_total_rows": 5250,
+    "duplicate_video_paths_count": 969,
+    "hf_label_folder_mismatches_count": 49,
+    "hf_label_folder_mismatches_sample": [
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "35. Bank",
+        "folder_parent": "Places",
+        "folder_label": "26. University",
+        "video_path": "Places/26. University/MVI_3376.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Animals",
+        "hf_label": "4. Bird",
+        "folder_parent": "Home",
+        "folder_label": "38. Page",
+        "video_path": "Home/38. Page/MVI_8809.MP4"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Adjectives",
+        "hf_label": "79. short",
+        "folder_parent": "Home",
+        "folder_label": "28. Window",
+        "video_path": "Home/28. Window/MVI_8768.MP4"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Days_and_Time",
+        "hf_label": "Second (Number)",
+        "folder_parent": "Home",
+        "folder_label": "50. Tool",
+        "video_path": "Home/50. Tool/MVI_4453.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Animals",
+        "hf_label": "4. Bird",
+        "folder_parent": "Greetings",
+        "folder_label": "56. Pleased",
+        "video_path": "Greetings/56. Pleased/MVI_0116.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Days_and_Time",
+        "hf_label": "Second (Number)",
+        "folder_parent": "Places",
+        "folder_label": "36. Location",
+        "video_path": "Places/36. Location/MVI_3586.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "28. Store or Shop",
+        "folder_parent": "Society",
+        "folder_label": "20. Price",
+        "video_path": "Society/20. Price/MVI_4331.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Adjectives",
+        "hf_label": "84. small little",
+        "folder_parent": "People",
+        "folder_label": "76. Neighbour",
+        "video_path": "People/76. Neighbour/MVI_3959.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "21. Train Station",
+        "folder_parent": "Places",
+        "folder_label": "27. Park",
+        "video_path": "Places/27. Park/MVI_3304.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "31. Temple",
+        "folder_parent": "Clothes",
+        "folder_label": "41. Shirt",
+        "video_path": "Clothes/41. Shirt/MVI_5019.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "35. Bank",
+        "folder_parent": "Clothes",
+        "folder_label": "41. Shirt",
+        "video_path": "Clothes/41. Shirt/MVI_5019.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "36. Location",
+        "folder_parent": "Home",
+        "folder_label": "37. Book",
+        "video_path": "Home/37. Book/MVI_4915.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "36. Location",
+        "folder_parent": "Animals",
+        "folder_label": "6. Mouse",
+        "video_path": "Animals/6. Mouse/MVI_4161.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Days_and_Time",
+        "hf_label": "Second (Number)",
+        "folder_parent": "Colours",
+        "folder_label": "51. Brown",
+        "video_path": "Colours/51. Brown/MVI_4909.MOV"
+      },
+      {
+        "split": "train",
+        "hf_parent": "Places",
+        "hf_label": "33. India",
+        "folder_parent": "Colours",
+        "folder_label": "51. Brown",
+        "video_path": "Colours/51. Brown/MVI_4909.MOV"
+      }
+    ],
+    "hf_cross_split_leakage": {
+      "train_val_overlap": 120,
+      "train_test_overlap": 277,
+      "val_test_overlap": 27
+    },
+    "unique_video_count": 4257,
+    "unique_parent_categories": 15,
+    "unique_folder_classes": 262,
+    "include_50_unique_videos": 943,
+    "include_50_classes": 50,
+    "extensions": {
+      ".MOV": 3652,
+      ".MP4": 605
+    },
+    "category_video_counts": {
+      "Adjectives": 788,
+      "Animals": 161,
+      "Clothes": 198,
+      "Colours": 222,
+      "Days_and_Time": 298,
+      "Electronics": 140,
+      "Greetings": 190,
+      "Home": 379,
+      "Jobs": 225,
+      "Means_of_Transportation": 186,
+      "People": 513,
+      "Places": 380,
+      "Pronouns": 168,
+      "Seasons": 85,
+      "Society": 324
+    },
+    "min_samples_per_class": 4,
+    "max_samples_per_class": 22
+  },
+  "zenodo_manifest_summary": null,
+  "local_videos_summary": {
+    "available": true,
+    "video_count": 275,
+    "local_categories": {
+      "Greetings": 190,
+      "Seasons": 85
+    },
+    "local_classes_count": 15,
+    "local_classes": {
+      "48. Hello": 21,
+      "49. How are you": 21,
+      "50. Alright": 21,
+      "51. Good Morning": 21,
+      "52. Good afternoon": 22,
+      "53. Good evening": 21,
+      "54. Good night": 21,
+      "55. Thank you": 21,
+      "56. Pleased": 21,
+      "61. Summer": 14,
+      "62. Spring": 14,
+      "63. Winter": 14,
+      "64. Fall": 15,
+      "65. Season": 14,
+      "Ex. Monsoon": 14
+    },
+    "probed_count": 30,
+    "corrupted_in_probe": [],
+    "sample_probes": [
+      {
+        "file": "Greetings\\48. Hello\\MVI_0029.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 63,
+        "duration_sec": 2.52
+      },
+      {
+        "file": "Greetings\\48. Hello\\MVI_0091.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 80,
+        "duration_sec": 3.2
+      },
+      {
+        "file": "Greetings\\48. Hello\\MVI_9982.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 51,
+        "duration_sec": 2.04
+      },
+      {
+        "file": "Greetings\\49. How are you\\MVI_0042.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 66,
+        "duration_sec": 2.64
+      },
+      {
+        "file": "Greetings\\49. How are you\\MVI_9960.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 86,
+        "duration_sec": 3.44
+      },
+      {
+        "file": "Greetings\\50. Alright\\MVI_0040.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 80,
+        "duration_sec": 3.2
+      },
+      {
+        "file": "Greetings\\50. Alright\\MVI_9925.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 53,
+        "duration_sec": 2.12
+      },
+      {
+        "file": "Greetings\\51. Good Morning\\MVI_0042.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 85,
+        "duration_sec": 3.4
+      },
+      {
+        "file": "Greetings\\51. Good Morning\\MVI_0100.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 63,
+        "duration_sec": 2.52
+      },
+      {
+        "file": "Greetings\\51. Good Morning\\MVI_9991.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 58,
+        "duration_sec": 2.32
+      }
+    ],
+    "resolutions": {
+      "1920x1080": 30
+    },
+    "fps_values": {
+      "25.0": 30
+    },
+    "frame_count_range": [
+      50,
+      101
+    ],
+    "duration_range_sec": [
+      2.0,
+      4.04
+    ]
+  }
+}

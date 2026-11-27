@@ -1,0 +1,24 @@
+{
+  "selected_variant": "dynamic_range",
+  "tflite_path": "D:\\Features\\Hand Gestures\\optimistic_isl\\deployment\\optimistic_model.tflite",
+  "labels_path": "D:\\Features\\Hand Gestures\\optimistic_isl\\deployment\\labels.json",
+  "benchmarks": {
+    "fp32": {
+      "size_kb": 384.14,
+      "test_accuracy": 0.9149,
+      "mean_latency_ms": 0.09,
+      "p95_latency_ms": 0.08,
+      "input_dtype": "<class 'numpy.float32'>"
+    },
+    "dynamic_range": {
+      "size_kb": 116.07,
+      "test_accuracy": 0.9149,
+      "mean_latency_ms": 0.05,
+      "p95_latency_ms": 0.046,
+      "input_dtype": "<class 'numpy.float32'>"
+    },
+    "full_int8": {
+      "error": "DLL load failed while importing _pywrap_tensorflow_lite_calibration_wrapper: An Application Control policy has blocked this file."
+    }
+  }
+}

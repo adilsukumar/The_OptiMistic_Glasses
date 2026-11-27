@@ -1,0 +1,15 @@
+# Optimistic ISL Recognition System - Workstation & Training Dependencies
+# Note: On Windows 11 with Smart App Control enabled, tensorflow==2.18.0 and numpy==2.0.2
+# are verified to load cleanly without DLL Application Control blocks.
+numpy>=1.26.0,<2.1.0
+scipy>=1.11.0
+opencv-python-headless>=4.9.0
+mediapipe>=0.10.14
+tensorflow>=2.17.0,<2.19.0
+scikit-learn>=1.4.0
+matplotlib>=3.8.0
+h5py>=3.10.0
+websockets>=12.0
+huggingface-hub>=0.24.0
+requests>=2.31.0
+pytest>=8.0.0

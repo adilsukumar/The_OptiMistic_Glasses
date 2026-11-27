@@ -1,0 +1,18 @@
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+.venv_pi/
+.venv_test/
+
+# Raw downloaded INCLUDE video archives & large raw videos (reproducible via dataset/download_dataset.py)
+**/dataset/raw_zips/
+**/dataset/raw_videos/
+**/processed_dataset/landmark_cache/
+
+# Local logs & user-saved unrecognized camera samples
+**/logs/
+**/unrecognized_samples/
+*.tmp

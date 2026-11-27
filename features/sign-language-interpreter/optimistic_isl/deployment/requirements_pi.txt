@@ -1,0 +1,7 @@
+# Optimistic ISL — Lightweight Raspberry Pi 4 / Pi 5 Runtime Dependencies
+numpy>=1.26.0,<2.2.0
+opencv-python-headless>=4.9.0
+mediapipe>=0.10.14
+ai-edge-litert>=1.0.0; platform_machine=="aarch64"
+tflite-runtime>=2.14.0; platform_machine!="aarch64"
+websockets>=12.0
