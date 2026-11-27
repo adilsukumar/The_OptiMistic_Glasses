@@ -169,13 +169,22 @@
   "zenodo_manifest_summary": null,
   "local_videos_summary": {
     "available": true,
-    "video_count": 275,
+    "video_count": 443,
     "local_categories": {
       "Greetings": 190,
+      "Pronouns": 168,
       "Seasons": 85
     },
-    "local_classes_count": 15,
+    "local_classes_count": 23,
     "local_classes": {
+      "40. I": 21,
+      "41. you": 21,
+      "42. he": 21,
+      "43. she": 21,
+      "44. it": 21,
+      "45. we": 21,
+      "46. you (plural)": 21,
+      "47. they": 21,
       "48. Hello": 21,
       "49. How are you": 21,
       "50. Alright": 21,
@@ -204,23 +213,39 @@
         "duration_sec": 2.52
       },
       {
-        "file": "Greetings\\48. Hello\\MVI_0091.MOV",
+        "file": "Greetings\\48. Hello\\MVI_9954.MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
-        "frame_count": 80,
-        "duration_sec": 3.2
+        "frame_count": 69,
+        "duration_sec": 2.76
       },
       {
-        "file": "Greetings\\48. Hello\\MVI_9982.MOV",
+        "file": "Greetings\\49. How are you\\MVI_0092.MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
-        "frame_count": 51,
-        "duration_sec": 2.04
+        "frame_count": 83,
+        "duration_sec": 3.32
       },
       {
-        "file": "Greetings\\49. How are you\\MVI_0042.MOV",
+        "file": "Greetings\\50. Alright\\MVI_0037.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 73,
+        "duration_sec": 2.92
+      },
+      {
+        "file": "Greetings\\50. Alright\\MVI_9963.MOV",
+        "width": 1920,
+        "height": 1080,
+        "fps": 25.0,
+        "frame_count": 76,
+        "duration_sec": 3.04
+      },
+      {
+        "file": "Greetings\\51. Good Morning\\MVI_0098.MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
@@ -228,52 +253,36 @@
         "duration_sec": 2.64
       },
       {
-        "file": "Greetings\\49. How are you\\MVI_9960.MOV",
+        "file": "Greetings\\52. Good afternoon\\MVI_0046.MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
-        "frame_count": 86,
-        "duration_sec": 3.44
+        "frame_count": 91,
+        "duration_sec": 3.64
       },
       {
-        "file": "Greetings\\50. Alright\\MVI_0040.MOV",
+        "file": "Greetings\\52. Good afternoon\\MVI_9939.MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
-        "frame_count": 80,
-        "duration_sec": 3.2
+        "frame_count": 47,
+        "duration_sec": 1.88
       },
       {
-        "file": "Greetings\\50. Alright\\MVI_9925.MOV",
+        "file": "Greetings\\53. Good evening\\MVI_005_4 (2).MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
-        "frame_count": 53,
-        "duration_sec": 2.12
+        "frame_count": 89,
+        "duration_sec": 3.56
       },
       {
-        "file": "Greetings\\51. Good Morning\\MVI_0042.MOV",
+        "file": "Greetings\\53. Good evening\\MVI_9999.MOV",
         "width": 1920,
         "height": 1080,
         "fps": 25.0,
-        "frame_count": 85,
-        "duration_sec": 3.4
-      },
-      {
-        "file": "Greetings\\51. Good Morning\\MVI_0100.MOV",
-        "width": 1920,
-        "height": 1080,
-        "fps": 25.0,
-        "frame_count": 63,
-        "duration_sec": 2.52
-      },
-      {
-        "file": "Greetings\\51. Good Morning\\MVI_9991.MOV",
-        "width": 1920,
-        "height": 1080,
-        "fps": 25.0,
-        "frame_count": 58,
-        "duration_sec": 2.32
+        "frame_count": 56,
+        "duration_sec": 2.24
       }
     ],
     "resolutions": {
@@ -283,12 +292,12 @@
       "25.0": 30
     },
     "frame_count_range": [
-      50,
-      101
+      42,
+      91
     ],
     "duration_range_sec": [
-      2.0,
-      4.04
+      1.68,
+      3.64
     ]
   }
 }

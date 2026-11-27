@@ -4,21 +4,25 @@
   "labels_path": "D:\\Features\\Hand Gestures\\optimistic_isl\\deployment\\labels.json",
   "benchmarks": {
     "fp32": {
-      "size_kb": 384.14,
-      "test_accuracy": 0.9149,
-      "mean_latency_ms": 0.09,
-      "p95_latency_ms": 0.08,
+      "size_kb": 387.18,
+      "test_accuracy": 0.8533,
+      "mean_latency_ms": 0.116,
+      "p95_latency_ms": 0.13,
       "input_dtype": "<class 'numpy.float32'>"
     },
     "dynamic_range": {
-      "size_kb": 116.07,
-      "test_accuracy": 0.9149,
-      "mean_latency_ms": 0.05,
-      "p95_latency_ms": 0.046,
+      "size_kb": 116.95,
+      "test_accuracy": 0.84,
+      "mean_latency_ms": 0.086,
+      "p95_latency_ms": 0.143,
       "input_dtype": "<class 'numpy.float32'>"
     },
     "full_int8": {
-      "error": "DLL load failed while importing _pywrap_tensorflow_lite_calibration_wrapper: An Application Control policy has blocked this file."
+      "size_kb": 128.8,
+      "test_accuracy": 0.8533,
+      "mean_latency_ms": 0.103,
+      "p95_latency_ms": 0.117,
+      "input_dtype": "<class 'numpy.int8'>"
     }
   }
 }

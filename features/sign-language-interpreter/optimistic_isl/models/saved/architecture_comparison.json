@@ -1,23 +1,23 @@
 [
   {
     "architecture": "mlp_static",
-    "num_parameters": 26255,
-    "best_val_accuracy": 0.5799999833106995,
-    "best_val_loss": 1.2675466537475586,
-    "epochs_ran": 48
+    "num_parameters": 26775,
+    "best_val_accuracy": 0.6455696225166321,
+    "best_val_loss": 1.0617295503616333,
+    "epochs_ran": 52
   },
   {
     "architecture": "gru_temporal",
-    "num_parameters": 57967,
-    "best_val_accuracy": 0.800000011920929,
-    "best_val_loss": 0.607641339302063,
-    "epochs_ran": 67
+    "num_parameters": 58487,
+    "best_val_accuracy": 0.5822784900665283,
+    "best_val_loss": 1.416178584098816,
+    "epochs_ran": 71
   },
   {
     "architecture": "tcn_temporal",
-    "num_parameters": 96239,
-    "best_val_accuracy": 0.8999999761581421,
-    "best_val_loss": 0.4704437255859375,
-    "epochs_ran": 78
+    "num_parameters": 97015,
+    "best_val_accuracy": 0.9113923907279968,
+    "best_val_loss": 0.42917269468307495,
+    "epochs_ran": 79
   }
 ]

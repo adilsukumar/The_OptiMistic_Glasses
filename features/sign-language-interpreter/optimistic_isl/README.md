@@ -163,23 +163,23 @@ See `integration/integration_example.py` for Python callback and WebSocket clien
 
 ---
 
-## 6. Observed Results (INCLUDE `Seasons` + `Greetings` — 15 Classes)
+## 6. Observed Results (INCLUDE `Pronouns` + `Greetings` + `Seasons` — 23 Classes)
 
-- **Processed Dataset**: 275 unique videos discovered -> **271 valid sequences** (4 rejected for `excessive_missing_hands`), split without leakage into **174 train / 50 validation / 47 test** (`(30, 128)` tensors, mean missing-hand ratio `0.1934`).
-- **Architecture Comparison (Validation Set, 50 samples)**:
-  - `mlp_static` (`26,255` params): `0.5800` val accuracy, `1.2675` val loss
-  - `gru_temporal` (`57,967` params): `0.8000` val accuracy, `0.6076` val loss
-  - `tcn_temporal` (`96,239` params, **selected**): `0.9000` val accuracy, `0.4704` val loss (`0.9093` val macro F1)
-- **Independent Test Set (`tcn_temporal`, 47 samples)**:
-  - **Accuracy**: `0.9149` (`91.49%`)
-  - **Macro Precision / Recall / F1**: `0.9467` / `0.9289` / `0.9167` (`0.9096` weighted F1)
-  - **Confidence-Gated (`>= 0.70`)**: `87.23%` coverage at `92.68%` accuracy
-  - **Weakest Signs**: `SPRING` (`F1=0.5000`, `recall=0.3333`), `GOOD MORNING` (`F1=0.7500`, `recall=0.6000`), `HOW ARE YOU` (`F1=0.7500`), `GOOD NIGHT` (`F1=0.7500`)
+- **Processed Dataset**: 443 unique videos discovered -> **434 valid sequences** (9 rejected for `excessive_missing_hands`), split without leakage into **280 train / 79 validation / 75 test** (`(30, 128)` tensors, mean missing-hand ratio `0.1725`).
+- **Architecture Comparison (Validation Set, 79 samples)**:
+  - `mlp_static` (`26,775` params): `0.6456` val accuracy, `1.0617` val loss
+  - `gru_temporal` (`58,487` params): `0.5823` val accuracy, `1.4162` val loss
+  - `tcn_temporal` (`97,015` params, **selected**): `0.9114` val accuracy, `0.4292` val loss (`0.9186` val macro F1)
+- **Independent Test Set (`tcn_temporal`, 75 samples)**:
+  - **Accuracy**: `0.8533` (`85.33%`)
+  - **Macro Precision / Recall / F1**: `0.8627` / `0.8514` / `0.8419` (`0.8395` weighted F1)
+  - **Confidence-Gated (`>= 0.70`)**: `78.67%` coverage at **`96.61%` accuracy**
+  - **Weakest Signs**: `SHE` (`F1=0.0000`), `YOU (PLURAL)` (`F1=0.2500`), `FALL` (`F1=0.5000`), `HE` (`F1=0.6667`), `YOU` (`F1=0.6667`)
 - **TFLite Export (`deployment/optimistic_model.tflite`)**:
-  - `fp32`: `384.14 KB`, `0.9149` test accuracy, `0.090 ms` mean CPU latency
-  - `dynamic_range` (**selected**): `116.07 KB`, `0.9149` test accuracy, `0.050 ms` mean CPU latency (100% pure `TFLITE_BUILTINS`, zero Flex ops)
+  - `fp32`: `387.18 KB`, `0.8533` test accuracy, `0.116 ms` mean CPU latency
+  - `dynamic_range` (**selected**): `116.95 KB`, `0.8400` test accuracy, `0.086 ms` mean CPU latency (100% pure `TFLITE_BUILTINS`, zero Flex ops)
+  - `full_int8` (`deployment/optimistic_model_int8.tflite`): `128.80 KB`, `0.8533` test accuracy, `0.103 ms` mean CPU latency
 - **Automated Tests**: `pytest tests -v` -> **9 passed**
 - **Environment Notes / Remaining Physical Hardware Checks**:
-  - Full-INT8 calibration (`_pywrap_tensorflow_lite_calibration_wrapper`) was blocked on the Windows training host by Windows Smart App Control (`WinError 4551`); dynamic-range quantization succeeded with zero accuracy drop (`0.9149`).
   - Live physical webcam & Raspberry Pi 4/5 hardware camera (`Picamera2` / USB V4L2) and HUD display execution remain to be tested on the target Raspberry Pi device.
 
