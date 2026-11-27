@@ -6,6 +6,8 @@ __pycache__/
 .venv/
 .venv_pi/
 .venv_test/
+.env
+*.env
 
 # Raw downloaded INCLUDE video archives & large raw videos (reproducible via dataset/download_dataset.py)
 **/dataset/raw_zips/

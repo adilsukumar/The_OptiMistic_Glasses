@@ -21,12 +21,15 @@ class TextToSpeechEngine:
         piper_model_path: Path | str | None = None,
         rate: int = 175,
         volume: float = 0.95,
+        output_device: str | int | None = None,
         on_speak_callback: Callable[[str], None] | None = None,
     ) -> None:
         self.requested_engine = engine.lower()
         self.piper_model_path = Path(piper_model_path) if piper_model_path else None
         self.rate = rate
         self.volume = max(0.0, min(1.0, volume))
+        self.output_device = output_device
+        self.active_output_name: str = "System Default"
         self.on_speak_callback = on_speak_callback
 
         self.active_engine: str = "mock"
@@ -34,10 +37,24 @@ class TextToSpeechEngine:
         self._queue: queue.Queue[tuple[str, threading.Event | None]] = queue.Queue()
         self._stop_event = threading.Event()
         self._speaking_event = threading.Event()
+        self._cancel_speech = threading.Event()
+        self._current_sapi_voice: Any = None
 
         self._detect_engine()
+        self._probe_initial_output()
         self._worker = threading.Thread(target=self._worker_loop, name="OptimisticTTS", daemon=True)
         self._worker.start()
+
+    def _probe_initial_output(self) -> None:
+        """Probe and set active audio output during initialization."""
+        if self.active_engine == "mock":
+            return
+        try:
+            import win32com.client
+            voice = win32com.client.Dispatch("SAPI.SpVoice")
+            self._apply_sapi_output(voice)
+        except Exception:
+            pass
 
     def _detect_engine(self) -> None:
         if self.requested_engine == "mock":
@@ -97,8 +114,45 @@ class TextToSpeechEngine:
     def wait_until_done(self) -> None:
         self._queue.join()
 
+    def stop(self) -> None:
+        """Immediately interrupt any active speech and purge remaining queue items."""
+        self._cancel_speech.set()
+
+        # Discard any remaining queued utterances
+        while not self._queue.empty():
+            try:
+                _, done_event = self._queue.get_nowait()
+                if done_event is not None:
+                    done_event.set()
+                self._queue.task_done()
+            except queue.Empty:
+                break
+
+        # Cancel active Windows SAPI SpVoice immediately
+        if self._current_sapi_voice is not None:
+            try:
+                # SVSFPurgeBeforeSpeak = 2 clears active speech buffer
+                self._current_sapi_voice.Speak("", 2)
+            except Exception:
+                pass
+
+        try:
+            import sounddevice as sd
+            sd.stop()
+        except Exception:
+            pass
+
+        self._speaking_event.clear()
+
     def _worker_loop(self) -> None:
+        try:
+            import pythoncom
+            pythoncom.CoInitialize()
+        except Exception:
+            pass
+
         pyttsx3_engine: Any = None
+        sapi_voice: Any = None
         while not self._stop_event.is_set():
             try:
                 text, done_event = self._queue.get(timeout=0.1)
@@ -114,30 +168,127 @@ class TextToSpeechEngine:
                 if self.active_engine == "piper":
                     self._speak_piper(text)
                 elif self.active_engine == "pyttsx3":
-                    pyttsx3_engine = self._speak_pyttsx3(text, pyttsx3_engine)
+                    sapi_voice, pyttsx3_engine = self._speak_windows(text, sapi_voice, pyttsx3_engine)
                 elif self.active_engine == "espeak":
                     self._speak_espeak(text)
                 else:
                     # Mock/headless mode prints nothing extra unless callback handles it
                     pass
-            except Exception:
-                # Fallback to espeak or silent record without crashing the loop
-                pass
+            except Exception as e:
+                # Log exception so it's not silently lost
+                import traceback
+                print(f"[TTS Error] {e}", flush=True)
             finally:
                 self._speaking_event.clear()
                 if done_event is not None:
                     done_event.set()
                 self._queue.task_done()
 
-    def _speak_pyttsx3(self, text: str, engine: Any) -> Any:
-        import pyttsx3
+        try:
+            import pythoncom
+            pythoncom.CoUninitialize()
+        except Exception:
+            pass
 
-        if engine is None:
-            engine = pyttsx3.init()
-        engine.setProperty("rate", self.rate)
-        engine.setProperty("volume", self.volume)
-        engine.say(text)
-        engine.runAndWait()
+    def _apply_sapi_output(self, engine: Any) -> None:
+        """Route Windows SAPI5 audio to the correct speaker (prefer Bluetooth earbuds when connected)."""
+        try:
+            tts = getattr(getattr(getattr(engine, "proxy", None), "_driver", None), "_tts", None)
+            if tts is None and hasattr(engine, "GetAudioOutputs"):
+                tts = engine
+            if tts is None or not hasattr(tts, "GetAudioOutputs"):
+                return
+
+            outputs = tts.GetAudioOutputs()
+            if not outputs or outputs.Count == 0:
+                return
+
+            target = self.output_device
+            target_str = str(target).lower().strip() if target is not None else ""
+
+            # 1. Explicit target matching
+            if target_str and target_str not in ("auto", "default"):
+                for i in range(outputs.Count):
+                    desc = outputs.Item(i).GetDescription().lower()
+                    if target_str in ("bluetooth", "bt", "earbuds", "headphones", "headset"):
+                        if any(k in desc for k in ("headphone", "headset", "bluetooth", "cosmobuds", "wh-", "buds", "airpods")):
+                            tts.AudioOutput = outputs.Item(i)
+                            self.active_output_name = outputs.Item(i).GetDescription()
+                            return
+                    elif target_str in ("laptop", "internal", "speakers", "speaker"):
+                        if any(k in desc for k in ("senary", "realtek", "high definition", "speakers")):
+                            tts.AudioOutput = outputs.Item(i)
+                            self.active_output_name = outputs.Item(i).GetDescription()
+                            return
+                    elif target_str == str(i) or target_str in desc:
+                        tts.AudioOutput = outputs.Item(i)
+                        self.active_output_name = outputs.Item(i).GetDescription()
+                        return
+
+            # 2. Smart auto-preference:
+            # If Bluetooth headphones or earbuds are connected, ALWAYS prefer them so speech is heard in-ear!
+            for i in range(outputs.Count):
+                desc = outputs.Item(i).GetDescription().lower()
+                if any(k in desc for k in ("cosmobuds", "headphone", "headset", "bluetooth", "wh-", "buds", "airpods")):
+                    tts.AudioOutput = outputs.Item(i)
+                    self.active_output_name = outputs.Item(i).GetDescription()
+                    return
+
+            # 3. If no Bluetooth, use laptop speakers (Senary, Realtek, etc.)
+            for i in range(outputs.Count):
+                desc = outputs.Item(i).GetDescription().lower()
+                if any(k in desc for k in ("senary", "realtek", "high definition", "internal", "laptop")):
+                    tts.AudioOutput = outputs.Item(i)
+                    self.active_output_name = outputs.Item(i).GetDescription()
+                    return
+
+            if hasattr(tts, "AudioOutput") and tts.AudioOutput:
+                self.active_output_name = tts.AudioOutput.GetDescription()
+        except Exception:
+            pass
+
+    def _speak_windows(self, text: str, sapi_voice: Any, pyttsx3_engine: Any) -> tuple[Any, Any]:
+        """Speak on Windows using fast native SAPI.SpVoice with fallback to pyttsx3."""
+        # 1. Primary: Direct SAPI SpVoice for fast, glitch-free output and direct device routing
+        self._cancel_speech.clear()
+        try:
+            if sapi_voice is None:
+                import win32com.client
+                sapi_voice = win32com.client.Dispatch("SAPI.SpVoice")
+            self._current_sapi_voice = sapi_voice
+            self._apply_sapi_output(sapi_voice)
+            sapi_voice.Volume = int(self.volume * 100)
+            sapi_rate = int((self.rate - 175) / 25)
+            sapi_voice.Rate = max(-10, min(10, sapi_rate))
+
+            # SVSFlagsAsync = 1 allows responsive cancellation in tight 30ms polling
+            sapi_voice.Speak(text, 1)
+            while not sapi_voice.WaitUntilDone(30):
+                if self._cancel_speech.is_set() or self._stop_event.is_set():
+                    sapi_voice.Speak("", 2)  # SVSFPurgeBeforeSpeak
+                    break
+            return sapi_voice, pyttsx3_engine
+        except Exception:
+            pass
+        finally:
+            self._current_sapi_voice = None
+
+        # 2. Fallback: pyttsx3
+        try:
+            if pyttsx3_engine is None:
+                import pyttsx3
+                pyttsx3_engine = pyttsx3.init()
+            self._apply_sapi_output(pyttsx3_engine)
+            pyttsx3_engine.setProperty("rate", self.rate)
+            pyttsx3_engine.setProperty("volume", self.volume)
+            pyttsx3_engine.say(text)
+            pyttsx3_engine.runAndWait()
+        except Exception:
+            pass
+        return sapi_voice, pyttsx3_engine
+
+    def _speak_pyttsx3(self, text: str, engine: Any) -> Any:
+        _, engine = self._speak_windows(text, None, engine)
         return engine
 
     def _speak_espeak(self, text: str) -> None:

@@ -5,16 +5,23 @@ End-to-end offline-capable voice assistant for **Optimistic Smart Glasses**, bui
 ## Features
 
 - **Mandatory Startup Sequence**: Speaks `"Welcome back Optimistic innovators"` followed by `"I am ready. How can I help you?"` before activating the microphone listener, while displaying the greeting on the Optimistic HUD.
+- **Conversational Intelligence (Multi-Provider LLM)**: Answers any general knowledge question or conversation using **xAI Grok**, **Google Gemini**, **Groq LPU**, **Ollama** (100% offline), or **OpenAI**, with intelligent speech sanitization for natural voice answers.
+- **Instant Speech Interruption (Barge-In)**: Saying `"OptiMistic stop"`, `"Stop talking"`, or `"Be quiet"` purges audio queues immediately (<50ms) using low-level SAPI/hardware abort hooks.
+- **Bluetooth & Multi-Sink Audio**: Automatic detection and priority routing for Bluetooth headsets and glasses audio output.
 - **Offline Speech-to-Text**: Supports **Vosk** (`vosk-model-small-en-us-0.15`, lightweight for Raspberry Pi) and **faster-whisper**, with adaptive Voice Activity Detection (VAD), DC-offset/noise gating, and duplicate command filtering.
-- **Offline Text-to-Speech**: Sequential non-overlapping speech queue supporting **Piper TTS**, **pyttsx3**, and **eSpeak NG**.
+- **Offline Text-to-Speech**: Sequential non-overlapping speech queue supporting **Windows SAPI / Piper TTS**, **pyttsx3**, and **eSpeak NG**.
 - **Natural Language Command Understanding**:
   - **Websites**: Open Google, YouTube, Gmail, Google Maps, ChatGPT, Wikipedia, Instagram, Facebook, or explicit URLs.
-  - **Exact Text Typing**: `"Type hello world"`, `"Type YouTube.com"` — preserves exact spelling without silent correction.
+  - **Exact Text Typing**: `"Type hello world"`, `"Type YouTube.com"` — preserves exact spelling without silent correction into Notepad or any active window.
   - **Applications**: Open Notepad/text editor, Calculator, File Manager, Browser, and Terminal (with explicit confirmation).
-  - **YouTube Browser Automation (Playwright)**: Open YouTube, search for videos, select 1st/2nd/3rd video, play, pause, resume, go back, scroll up/down, next page, volume up/down, mute/unmute.
+  - **YouTube Automation (Multi-Tier Playwright + OS Browser Control)**:
+    - Search for videos (`"search youtube for chill lofi music"` or `"type lofi in youtube search bar"`)
+    - Select videos by index (`"select the first video"`)
+    - Control playback (`"OptiMistic pause the video"`, `"play the video"`, `"resume video"`) across Playwright and external desktop browsers (Chrome, Edge, Brave).
+    - Window management (`"OptiMistic close this window"` specifically targets and closes the YouTube window/tab).
   - **Desktop Control**: Minimize/maximize/close window, switch application, show desktop, copy/paste/select all, Enter/Escape/Backspace, and confirmation-gated sensitive actions.
 - **Listening Modes**: Continuous listening (default) or Wake-Word mode (`--wake-word`, `"Hey Optimistic"`).
-- **Optimistic Smart-Glasses HUD**: Minimal high-contrast Tkinter display (`display/display_manager.py`) with callback hooks for hardware display integration.
+- **Optimistic Smart-Glasses HUD & Web Dashboard**: Minimal high-contrast Tkinter display (`display/display_manager.py`) plus an interactive Web HUD testing dashboard (`web_app.py`).
 
 ## Quick Start (Windows Local)
 
@@ -61,4 +68,3 @@ All Pi-to-Windows commands are signed with HMAC-SHA256 + timestamp freshness ver
 ```powershell
 .\.venv\Scripts\python.exe -m pytest optimistic_voice/tests -v
 ```
-

@@ -68,6 +68,8 @@ class ResponseManager:
                 "mute": "Muting audio.",
                 "unmute": "Unmuting audio.",
             }.get(action, "Adjusting volume.")
+        if intent == IntentType.LLM_QUERY:
+            return ""
         if intent == IntentType.DESKTOP_ACTION:
             action = p.get("action", "")
             mapping = {

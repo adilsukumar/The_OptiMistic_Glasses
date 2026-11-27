@@ -112,6 +112,25 @@ class BrowserController:
         except Exception:
             return ""
 
+    def has_open_page(self) -> bool:
+        return self._page is not None and not self._page.is_closed()
+
+    def close_current_page(self) -> ExecutionResult:
+        """Close the currently active browser page/window."""
+        try:
+            def _close_page() -> str:
+                url = ""
+                if self._page is not None and not self._page.is_closed():
+                    url = str(self._page.url)
+                    self._page.close()
+                    self._page = None
+                return url
+
+            url = self._run(_close_page)
+            return ExecutionResult(success=True, message=f"Closed browser window: {url}")
+        except Exception as exc:
+            return ExecutionResult(success=False, message=f"Could not close browser window: {exc}")
+
     def close(self) -> None:
         def _shutdown() -> None:
             for obj in (self._context, self._browser, self._playwright):

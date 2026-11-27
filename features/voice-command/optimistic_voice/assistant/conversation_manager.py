@@ -40,7 +40,7 @@ class ConversationManager:
             self.state.pending_confirmation = None
             return "confirmed", pending
 
-        if cmd.intent == IntentType.CONFIRM_NO:
+        if cmd.intent in (IntentType.CONFIRM_NO, IntentType.STOP_ASSISTANT):
             self.state.pending_confirmation = None
             return "cancelled", None
 

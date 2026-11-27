@@ -23,18 +23,11 @@ def remove_dc_and_reduce_noise(
     samples: np.ndarray,
     noise_floor: float = 0.003,
 ) -> np.ndarray:
-    """Apply DC-offset removal, high-pass rumble filtering, and gentle soft noise gating."""
+    """Apply DC-offset removal without destroying speech harmonics or zero-crossings."""
     if samples.size == 0:
         return samples
     audio = samples.astype(np.float32, copy=False)
     audio = audio - np.mean(audio)
-    audio = high_pass_filter(audio, alpha=0.95)
-    if noise_floor > 0.0:
-        gate = noise_floor * 1.15
-        mask = np.abs(audio) < gate
-        if np.any(mask):
-            audio = audio.copy()
-            audio[mask] *= 0.35
     return np.clip(audio, -1.0, 1.0)
 
 
@@ -57,19 +50,21 @@ def normalize_utterance(
 
 @dataclass
 class VoiceActivityDetector:
-    """Adaptive energy-based VAD tuned for sensitive pickup in noisy environments."""
+    """Adaptive energy-based VAD tuned for sensitive pickup, natural speech pauses, and non-destructive buffering."""
 
     sample_rate: int = 16000
-    energy_threshold: float = 0.004
-    speech_pad_chunks: int = 4
-    silence_chunks: int = 7
+    energy_threshold: float = 0.0030
+    speech_pad_chunks: int = 8
+    silence_chunks: int = 12
     max_utterance_s: float = 15.0
     chunk_samples: int = 1600
     noise_reduction_enabled: bool = True
 
     _noise_floor: float = field(default=0.002, init=False)
     _in_speech: bool = field(default=False, init=False)
+    _just_started: bool = field(default=False, init=False)
     _silence_count: int = field(default=0, init=False)
+    _last_rms: float = field(default=0.0, init=False)
     _pre_buffer: deque[np.ndarray] = field(init=False)
     _utterance_chunks: list[np.ndarray] = field(default_factory=list, init=False)
 
@@ -82,11 +77,21 @@ class VoiceActivityDetector:
         return self._in_speech
 
     @property
+    def speech_started(self) -> bool:
+        """True only on the exact chunk where speech starts."""
+        return self._just_started
+
+    @property
+    def current_rms(self) -> float:
+        return self._last_rms
+
+    @property
     def noise_floor(self) -> float:
         return self._noise_floor
 
     def reset(self) -> None:
         self._in_speech = False
+        self._just_started = False
         self._silence_count = 0
         self._pre_buffer.clear()
         self._utterance_chunks.clear()
@@ -96,17 +101,19 @@ class VoiceActivityDetector:
 
         Returns a normalized int16 utterance array when speech ends, else None.
         """
+        self._just_started = False
         if chunk.size == 0:
             return None
 
         raw = chunk.astype(np.float32, copy=False)
         raw = raw - np.mean(raw)
-        # Measure speech-band energy after removing <100 Hz fan/hum rumble
+        # Measure speech-band energy after removing <100 Hz rumble
         filtered = high_pass_filter(raw, alpha=0.96) if self.noise_reduction_enabled else raw
         rms = float(np.sqrt(np.mean(filtered * filtered)))
+        self._last_rms = rms
 
-        # Sensitive SNR threshold: 1.55x stationary noise floor
-        dynamic_threshold = max(self.energy_threshold, self._noise_floor * 1.55)
+        # Sensitive SNR threshold: 1.50x stationary noise floor
+        dynamic_threshold = max(self.energy_threshold, self._noise_floor * 1.50)
 
         if not self._in_speech:
             # Asymmetric noise-floor tracking: drops quickly in quiet, rises slowly in noise
@@ -115,16 +122,17 @@ class VoiceActivityDetector:
             else:
                 self._noise_floor = 0.98 * self._noise_floor + 0.02 * min(rms, dynamic_threshold)
 
-            self._pre_buffer.append(filtered)
+            self._pre_buffer.append(raw)
             if rms >= dynamic_threshold:
                 self._in_speech = True
+                self._just_started = True
                 self._silence_count = 0
                 self._utterance_chunks = list(self._pre_buffer)
                 self._pre_buffer.clear()
             return None
 
-        self._utterance_chunks.append(filtered)
-        if rms >= dynamic_threshold * 0.65:
+        self._utterance_chunks.append(raw)
+        if rms >= dynamic_threshold * 0.60:
             self._silence_count = 0
         else:
             self._silence_count += 1
@@ -132,8 +140,7 @@ class VoiceActivityDetector:
         max_chunks = max(1, int((self.max_utterance_s * self.sample_rate) / max(1, self.chunk_samples)))
         if self._silence_count >= self.silence_chunks or len(self._utterance_chunks) >= max_chunks:
             full_audio = np.concatenate(self._utterance_chunks)
-            if self.noise_reduction_enabled:
-                full_audio = remove_dc_and_reduce_noise(full_audio, self._noise_floor * 0.8)
+            full_audio = remove_dc_and_reduce_noise(full_audio, self._noise_floor)
             full_audio = normalize_utterance(full_audio)
             self.reset()
             return (np.clip(full_audio, -1.0, 1.0) * 32767.0).astype(np.int16)

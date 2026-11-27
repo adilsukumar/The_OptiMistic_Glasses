@@ -54,6 +54,9 @@ class SpeechRecognizer:
         self.active_engine: str = "uninitialized"
         self._vosk_model: Any = None
         self._whisper_model: Any = None
+        self._stream_rec: Any = None
+        self._stream_words: list[str] = []
+        self._stream_buffer: list[np.ndarray] = []
         self._initialize_engine()
 
     def _initialize_engine(self) -> None:
@@ -61,21 +64,29 @@ class SpeechRecognizer:
             self.active_engine = "mock"
             return
 
-        if self.requested_engine in ("auto", "vosk"):
+        if self.requested_engine == "vosk":
             if self._try_init_vosk():
                 self.active_engine = "vosk"
                 return
-            if self.requested_engine == "vosk":
-                raise RuntimeError(
-                    f"Vosk engine requested, but model or vosk package unavailable at {self.vosk_model_path}"
-                )
+            raise RuntimeError(
+                f"Vosk engine requested, but model or vosk package unavailable at {self.vosk_model_path}"
+            )
 
-        if self.requested_engine in ("auto", "faster_whisper", "faster-whisper"):
+        if self.requested_engine in ("faster_whisper", "faster-whisper"):
             if self._try_init_whisper():
                 self.active_engine = "faster_whisper"
                 return
-            if self.requested_engine in ("faster_whisper", "faster-whisper"):
-                raise RuntimeError("faster-whisper engine requested, but package/model unavailable.")
+            raise RuntimeError("faster-whisper engine requested, but package/model unavailable.")
+
+        # In "auto" mode: prefer faster_whisper for superior recognition accuracy if available,
+        # otherwise fall back to offline Vosk.
+        if self.requested_engine == "auto":
+            if self._try_init_whisper():
+                self.active_engine = "faster_whisper"
+                return
+            if self._try_init_vosk():
+                self.active_engine = "vosk"
+                return
 
         self.active_engine = "unavailable"
 
@@ -114,16 +125,28 @@ class SpeechRecognizer:
             from vosk import KaldiRecognizer
 
             rec = KaldiRecognizer(self._vosk_model, self.sample_rate)
-            rec.AcceptWaveform(audio_int16.tobytes())
-            result = json.loads(rec.FinalResult())
-            text = result.get("text", "").strip()
+            chunk_size = 4000
+            audio_bytes = audio_int16.tobytes()
+            words: list[str] = []
+            for i in range(0, len(audio_bytes), chunk_size):
+                chunk = audio_bytes[i : i + chunk_size]
+                if rec.AcceptWaveform(chunk):
+                    part = json.loads(rec.Result()).get("text", "").strip()
+                    if part:
+                        words.append(part)
+            final_part = json.loads(rec.FinalResult()).get("text", "").strip()
+            if final_part:
+                words.append(final_part)
+            text = " ".join(words).strip()
         elif self.active_engine == "faster_whisper" and self._whisper_model is not None:
             audio_f32 = audio_int16.astype(np.float32) / 32768.0
             segments, _ = self._whisper_model.transcribe(
                 audio_f32,
                 language="en",
+                initial_prompt="OptiMistic. OptiMistic, what is the weather? OptiMistic open Google. OptiMistic search YouTube. OptiMistic stop.",
                 vad_filter=False,
-                beam_size=1,
+                beam_size=2,
+                condition_on_previous_text=False,
             )
             text = " ".join(seg.text.strip() for seg in segments).strip()
         elif self.active_engine == "mock":
@@ -133,6 +156,76 @@ class SpeechRecognizer:
                 "No offline speech recognition model is available. "
                 "Download a Vosk model into models/speech_models/ or install faster-whisper."
             )
+
+        if filter_duplicates and self.dedup.is_duplicate(text):
+            return ""
+        return text
+
+    def start_stream(self) -> None:
+        """Start a live streaming recognition session."""
+        self._stream_words = []
+        self._stream_buffer = []
+        if self.active_engine == "vosk" and self._vosk_model is not None:
+            from vosk import KaldiRecognizer
+
+            self._stream_rec = KaldiRecognizer(self._vosk_model, self.sample_rate)
+        else:
+            self._stream_rec = None
+
+    def feed_stream_chunk(self, chunk: np.ndarray) -> str:
+        """Feed a float32 or int16 audio chunk, returning live partial text if available."""
+        if chunk.size == 0:
+            return ""
+
+        if chunk.dtype != np.int16:
+            c_int16 = (np.clip(chunk, -1.0, 1.0) * 32767.0).astype(np.int16)
+        else:
+            c_int16 = chunk
+
+        self._stream_buffer.append(c_int16)
+
+        if self.active_engine == "vosk" and self._stream_rec is not None:
+            chunk_bytes = c_int16.tobytes()
+            if self._stream_rec.AcceptWaveform(chunk_bytes):
+                part = json.loads(self._stream_rec.Result()).get("text", "").strip()
+                if part:
+                    self._stream_words.append(part)
+                return " ".join(self._stream_words).strip()
+            else:
+                partial = json.loads(self._stream_rec.PartialResult()).get("partial", "").strip()
+                combined = (" ".join(self._stream_words) + " " + partial).strip()
+                return combined
+
+        return ""
+
+    def finish_stream(
+        self,
+        final_audio_int16: np.ndarray | None = None,
+        filter_duplicates: bool = True,
+    ) -> str:
+        """Finalize the active stream and return the complete transcribed text."""
+        text = ""
+        if self.active_engine == "vosk" and self._stream_rec is not None:
+            final_part = json.loads(self._stream_rec.FinalResult()).get("text", "").strip()
+            if final_part:
+                self._stream_words.append(final_part)
+            text = " ".join(self._stream_words).strip()
+            self._stream_rec = None
+            self._stream_words = []
+            self._stream_buffer = []
+        elif self.active_engine == "faster_whisper" and self._whisper_model is not None:
+            if final_audio_int16 is not None and final_audio_int16.size > 0:
+                audio_to_use = final_audio_int16
+            elif self._stream_buffer:
+                audio_to_use = np.concatenate(self._stream_buffer)
+            else:
+                audio_to_use = np.array([], dtype=np.int16)
+            self._stream_buffer = []
+            if audio_to_use.size > 0:
+                text = self.transcribe(audio_to_use, filter_duplicates=False)
+        else:
+            if final_audio_int16 is not None:
+                text = self.transcribe(final_audio_int16, filter_duplicates=False)
 
         if filter_duplicates and self.dedup.is_duplicate(text):
             return ""

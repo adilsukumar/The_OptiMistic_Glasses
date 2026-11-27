@@ -26,6 +26,8 @@ class IntentType(str, Enum):
     SENSITIVE_ACTION = "sensitive_action"
     MUTE_ASSISTANT = "mute_assistant"
     UNMUTE_ASSISTANT = "unmute_assistant"
+    STOP_ASSISTANT = "stop_assistant"
+    LLM_QUERY = "llm_query"
     CONFIRM_YES = "confirm_yes"
     CONFIRM_NO = "confirm_no"
     AMBIGUOUS = "ambiguous"

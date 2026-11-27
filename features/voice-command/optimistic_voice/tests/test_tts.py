@@ -26,3 +26,12 @@ def test_tts_rate_and_volume_settings() -> None:
     assert tts.rate == 200
     assert tts.volume == 0.5
     tts.shutdown()
+
+
+def test_tts_stop_clears_queue() -> None:
+    tts = TextToSpeechEngine(engine="mock", rate=180, volume=0.9)
+    tts.speak("First phrase", block=False)
+    tts.speak("Second phrase that will be cancelled", block=False)
+    tts.stop()
+    assert tts._queue.empty()
+    tts.shutdown()

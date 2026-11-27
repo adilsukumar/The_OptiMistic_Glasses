@@ -76,6 +76,9 @@ def test_youtube_commands() -> None:
 
     assert parser.parse("Play video").intent == IntentType.YOUTUBE_PLAY
     assert parser.parse("Pause video.").intent == IntentType.YOUTUBE_PAUSE
+    assert parser.parse("OptiMistic pause the video").intent == IntentType.YOUTUBE_PAUSE
+    assert parser.parse("pause this video").intent == IntentType.YOUTUBE_PAUSE
+    assert parser.parse("stop the video").intent == IntentType.YOUTUBE_PAUSE
     assert parser.parse("Resume video").intent == IntentType.YOUTUBE_RESUME
     assert parser.parse("Go back").intent == IntentType.BROWSER_BACK
     assert parser.parse("Scroll down").params["direction"] == "down"
@@ -86,6 +89,10 @@ def test_desktop_and_sensitive_commands() -> None:
     parser = CommandParser()
 
     assert parser.parse("Close current window.").params["action"] == "close_window"
+    assert parser.parse("OptiMistic close this window").params["action"] == "close_window"
+    assert parser.parse("close this window").params["action"] == "close_window"
+    assert parser.parse("close the youtube window").params["action"] == "close_window"
+    assert parser.parse("close this winodw").params["action"] == "close_window"
     assert parser.parse("Minimize window").params["action"] == "minimize_window"
     assert parser.parse("Maximize window").params["action"] == "maximize_window"
     assert parser.parse("Copy selected text").params["action"] == "copy"
@@ -95,4 +102,14 @@ def test_desktop_and_sensitive_commands() -> None:
     shutdown = parser.parse("Shut down the computer")
     assert shutdown.intent == IntentType.SENSITIVE_ACTION
     assert shutdown.requires_confirmation is True
+
+
+def test_stop_and_interruption_commands() -> None:
+    parser = CommandParser()
+
+    assert parser.parse("Stop").intent == IntentType.STOP_ASSISTANT
+    assert parser.parse("OptiMistic stop").intent == IntentType.STOP_ASSISTANT
+    assert parser.parse("Shut up").intent == IntentType.STOP_ASSISTANT
+    assert parser.parse("Be quiet").intent == IntentType.STOP_ASSISTANT
+    assert parser.parse("Cancel").intent == IntentType.STOP_ASSISTANT
 
