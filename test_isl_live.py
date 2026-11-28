@@ -31,6 +31,67 @@ def test_foreground_keeps_one_per_label_and_does_not_pick_up_background_on_relea
     assert selector.select([("right", background)], now=1.0) == (None, None)
 
 
+def test_multi_person_scene_selects_only_front_person_one_hand():
+    selector = ForegroundHands()
+    # Front person is nearest (size 1.2), signing with single right hand at chest
+    front_person_hand = open_hand(0.52, size=1.2)
+    # Background 3rd persons with multiple hands visible
+    bg_person1_l = open_hand(0.20, size=0.60)
+    bg_person1_r = open_hand(0.30, size=0.55)
+    bg_person2_l = open_hand(0.80, size=0.50)
+    bg_person2_r = open_hand(0.88, size=0.48)
+
+    detections = [
+        ("left", bg_person1_l),
+        ("right", bg_person1_r),
+        ("right", front_person_hand),
+        ("left", bg_person2_l),
+        ("right", bg_person2_r),
+    ]
+
+    picked_left, picked_right = selector.select(detections, now=0.0)
+    assert picked_left is None, "Should not attach any background 3rd person hand to the left slot"
+    assert picked_right is front_person_hand, "Should strictly select only the nearest person's hand"
+
+
+def test_multi_person_scene_selects_only_front_person_two_hands():
+    selector = ForegroundHands()
+    # Front person signing with two hands (size 1.2 and 1.15)
+    front_r = open_hand(0.42, size=1.2)
+    front_l = open_hand(0.58, size=1.15)
+    # Background hands from 3rd persons
+    bg_l = open_hand(0.20, size=0.65)
+    bg_r = open_hand(0.85, size=0.60)
+
+    detections = [
+        ("left", bg_l),
+        ("right", front_r),
+        ("left", front_l),
+        ("right", bg_r),
+    ]
+
+    picked_left, picked_right = selector.select(detections, now=0.0)
+    assert picked_left is front_l, "Should select front person left hand"
+    assert picked_right is front_r, "Should select front person right hand"
+
+
+def test_side_by_side_rejects_further_person():
+    selector = ForegroundHands()
+    # Person A is in front (size 1.25)
+    person_a = open_hand(0.60, size=1.25)
+    # Person B is standing to the side but further away (size 0.70)
+    person_b = open_hand(0.25, size=0.70)
+
+    detections = [
+        ("left", person_b),
+        ("right", person_a),
+    ]
+
+    picked_left, picked_right = selector.select(detections, now=0.0)
+    assert picked_left is None, "Further person B must be discarded"
+    assert picked_right is person_a, "Nearest person A must be selected"
+
+
 def test_conversation_decodes_once_after_release_and_rejects_static_counting_pose():
     recognizer = PrecisionISLRecognizer()
     tracked_hand = open_hand()

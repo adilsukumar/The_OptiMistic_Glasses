@@ -35,7 +35,7 @@ class RealTimeHandDetector:
         self.detection_width = detection_width
         self._extractor = MediaPipeHandExtractor(
             task_model_path=task_model_path,
-            num_hands=4 if foreground_selector else config.DATASET_CONFIG.num_hands,
+            num_hands=8 if foreground_selector else config.DATASET_CONFIG.num_hands,
             min_detection_confidence=min_detection_confidence,
             min_presence_confidence=min_presence_confidence,
             min_tracking_confidence=min_tracking_confidence,

@@ -123,13 +123,18 @@ def _count_translation(number):
 
 
 def _palm_size(hand):
-    # Use length and width so an edge-on or palm-up sign can remain in view.
-    return float(max(np.linalg.norm(hand[9, :2] - hand[0, :2]),
-                     np.linalg.norm(hand[5, :2] - hand[17, :2])))
+    # Length from wrist (0) to middle MCP (9) and width from index MCP (5) to pinky MCP (17)
+    length = float(np.linalg.norm(hand[9, :2] - hand[0, :2]))
+    width = float(np.linalg.norm(hand[5, :2] - hand[17, :2]))
+    return float(max(length, width))
 
 
 class ForegroundHands:
-    """Pick at most one hand per MediaPipe label in the foreground signing area."""
+    """Strictly isolate and select ONLY the hands of the single person closest to the camera.
+
+    Any 3rd-person hands, background people, or bystander hands are completely
+    filtered out and discarded, regardless of how many hands or people are visible.
+    """
 
     def __init__(self):
         self.reset()
@@ -141,32 +146,95 @@ class ForegroundHands:
 
     def select(self, detections, now=None):
         now = monotonic() if now is None else now
-        if self._last_seen is not None and now - self._last_seen > 0.75:
+        # Reset tracker if no valid foreground hands detected for > 1.25s
+        if self._last_seen is not None and now - self._last_seen > 1.25:
             self._previous.clear()
+            self._scale = 0.0
 
         candidates = []
         for label, hand in detections:
+            if hand is None or len(hand) < 21:
+                continue
             size = _palm_size(hand)
-            x, y = np.mean(hand[[0, 5, 9, 13, 17], :2], axis=0)
-            if label in ("left", "right") and size >= 0.055 and 0.12 <= x <= 0.88 and 0.06 <= y <= 0.80:
-                candidates.append((size, label, hand))
+            center = np.mean(hand[[0, 5, 9, 13, 17], :2], axis=0)
+            cx, cy = float(center[0]), float(center[1])
+            # Only consider hands within the active interaction frame
+            if size >= 0.050 and 0.05 <= cx <= 0.95 and 0.05 <= cy <= 0.92:
+                candidates.append({
+                    "label": label,
+                    "hand": hand,
+                    "size": size,
+                    "center": center,
+                })
 
-        largest = max((size for size, _, _ in candidates), default=0.0)
-        minimum = max(0.66 * largest, 0.62 * self._scale)
+        if not candidates:
+            return None, None
+
+        # Sort strictly by apparent palm size descending:
+        # Perspective projection guarantees that the hand closest to the camera has the largest apparent size.
+        candidates.sort(key=lambda c: c["size"], reverse=True)
+        anchor = candidates[0]
+        anchor_size = anchor["size"]
+        anchor_center = anchor["center"]
+
+        # Minimum required size: must be consistent with foreground signer scale if recently active
+        min_required_size = max(0.055, 0.62 * self._scale)
+        if anchor_size < min_required_size:
+            # Anchor is too small compared to recent foreground signer;
+            # it is a background 3rd-person hand while the foreground signer has lowered hands.
+            return None, None
+
+        # Look for a second hand belonging to this SAME nearest person:
+        # A second hand of the same person must:
+        # 1. Be on the same depth plane: size >= 65% of anchor size
+        # 2. Be within natural human body signing reach:
+        #    horizontal distance dx <= 0.42, vertical distance dy <= 0.32, total distance <= 0.48
+        second_hand = None
+        for cand in candidates[1:]:
+            c_size = cand["size"]
+            c_center = cand["center"]
+            if c_size < 0.65 * anchor_size:
+                continue
+            dx = abs(c_center[0] - anchor_center[0])
+            dy = abs(c_center[1] - anchor_center[1])
+            dist = float(np.linalg.norm(c_center - anchor_center))
+            if dx > 0.42 or dy > 0.32 or dist > 0.48:
+                continue
+            if second_hand is None:
+                second_hand = cand
+            elif cand["label"] != anchor["label"] and second_hand["label"] == anchor["label"]:
+                # Prefer complementary handedness if size is within 15%
+                if cand["size"] >= 0.85 * second_hand["size"]:
+                    second_hand = cand
+            elif cand["size"] > second_hand["size"]:
+                second_hand = cand
+
         active = {}
-        for size, label, hand in sorted(candidates, key=lambda item: item[0], reverse=True):
-            if size < minimum or label in active:
-                continue
-            previous = self._previous.get(label)
-            if previous is not None and np.linalg.norm(previous[0, :2] - hand[0, :2]) > 0.25:
-                continue
-            active[label] = hand
+        if second_hand is not None:
+            h1, h2 = anchor, second_hand
+            if h1["label"] != h2["label"]:
+                active[h1["label"]] = h1["hand"]
+                active[h2["label"]] = h2["hand"]
+            else:
+                # If MediaPipe gave both hands the same label (e.g. clasped or praying),
+                # assign by screen X coordinate:
+                if h1["center"][0] < h2["center"][0]:
+                    active["right"] = h1["hand"]
+                    active["left"] = h2["hand"]
+                else:
+                    active["left"] = h1["hand"]
+                    active["right"] = h2["hand"]
+        else:
+            # Single-hand sign: ONLY assign the anchor hand.
+            # Crucially: DO NOT assign any 3rd-person hand to the empty slot!
+            active[anchor["label"]] = anchor["hand"]
 
         if active:
             self._previous = active
             self._last_seen = now
-            scale = max(_palm_size(hand) for hand in active.values())
-            self._scale = max(scale, 0.94 * self._scale)
+            current_max_scale = max(_palm_size(h) for h in active.values())
+            self._scale = max(current_max_scale, 0.92 * self._scale)
+
         return active.get("left"), active.get("right")
 
 
@@ -322,7 +390,7 @@ def _observe_gestures(hands, face):
                     return "I LOVE YOU", None
             if chest(pts[0]) and tuple(straight) == (True, True, True, False) and folded[3]:
                 if np.linalg.norm(pts[4] - pts[5]) < 0.60 * size:
-                    if pts[9, 1] / 0.75 < cy + 1.15 * height and abs(pts[9, 0] - cx) < 1.10 * width:
+                    if pts[9, 1] / 0.75 < cy + 0.40 * height and abs(pts[9, 0] - cx) < 0.85 * width:
                         return "WATER", None
                     return "WHAT ARE YOU DOING", None
             if chest(pts[0]) and np.all(folded & ~straight):
@@ -583,7 +651,8 @@ class PrecisionISLRecognizer:
         if not label and len(frames) >= 6:
             match = self.decode_phrase(np.asarray(frames, dtype=np.float32))
             if match:
-                label = match["gesture"]
+                self.sentence_builder.add_sign(match.get("gesture", ""), now=now)
+                return match
 
         if label:
             english = (LANDMARK_PHRASES.get(label) or GREETINGS.get(label, (label.title(), None)))[0]
