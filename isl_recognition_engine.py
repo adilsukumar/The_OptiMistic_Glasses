@@ -1,622 +1,664 @@
-"""The OptiMistic Glasses — Precision Indian Sign Language (ISL) Recognition Engine.
-
-Features:
-- Authentic Conversational Vocabulary:
-  - Namaste, How Are You, I Am Fine, What Are You Doing, I Am A Boy, I Am A Girl,
-    Help Me, I Love You, Hello, Yes, No, Alright
-- Full Sign Counting:
-  - One (1), Two (2), Three (3), Four (4), Five (5), Six (6), Seven (7), Eight (8), Ten (10)
-- Near-Hand Priority Filter: Background hands (far away / small palm) are completely ignored!
-- Foreground Focus: Sorts hands by palm size so the closest hand to the camera is always primary.
-- True 3D Landmark Geometry (x, y, z): Prevents open cupped/forward hands from collapsing into fists!
-- Natural Signing Range: Works across the entire chest-to-face active signing volume (wrist up to y=0.82).
-- Absolute Silence on Neutral/Resting Hands: If no intentional sign is formed, returns None (no speech!).
-- Unambiguous Spatial Disambiguation: Strict face-height bounding for Girl vs Chest-height for Numbers (One).
-- Multi-Hand & Merged-Hand Namaste Detection: Works whether camera tracks 2 hands or merges them into 1!
-- 100% Mutually Exclusive Finger Signatures (Zero False Collisions)
-- Fast 2-Frame Stability (~60ms response time, zero buffering!)
-"""
+"""Foreground hand selection and local ISL phrase decoding."""
 
 from __future__ import annotations
 
 from collections import deque
-from typing import Any, Deque, Dict, List, Optional
+from time import monotonic
+
 import numpy as np
 
+from isl_sentence_synthesizer import ContinuousSentenceBuilder
+import isl_vocabulary_db as db
 
-def _dist2(p1: np.ndarray, p2: np.ndarray) -> float:
-    """2D Euclidean distance in image plane."""
-    return float(np.linalg.norm(p1[:2] - p2[:2]))
+ISL_LESSON = "https://www.youtube.com/watch?v=5vHmvYA8Z6Q"
+INCLUDE_VIDEOS = "https://huggingface.co/datasets/ai4bharat/INCLUDE"
+GREETINGS = {
+    "HELLO": ("Hello", "48. Hello"),
+    "HOW ARE YOU": ("How are you?", "49. How are you"),
+    "ALRIGHT": ("Alright", "50. Alright"),
+    "GOOD MORNING": ("Good morning.", "51. Good Morning"),
+    "GOOD AFTERNOON": ("Good afternoon.", "52. Good afternoon"),
+    "GOOD EVENING": ("Good evening.", "53. Good evening"),
+    "GOOD NIGHT": ("Good night.", "54. Good night"),
+    "THANK YOU": ("Thank you.", "55. Thank you"),
+    "PLEASED": ("Pleased to meet you.", "56. Pleased"),
+}
+
+GREETING_INSTRUCTIONS = {
+    "HELLO": "Raise one open palm beside your ear with all five fingers spread. A short salute from the temple also works.",
+    "HOW ARE YOU": "Raise one or both open, slightly cupped palms in front of your chest. Face them up or forward. You can also point toward the person and then raise both thumbs.",
+    "ALRIGHT": "Curl four fingers into a fist and point your thumb up. Hold the hand in front of your chest.",
+    "GOOD MORNING": "Lift your hand from low beside you and spread your fingers beside your head, palm forward.",
+    "GOOD AFTERNOON": "Follow the afternoon movement in the video, bringing the sun handshape up over your head.",
+    "GOOD EVENING": "Keep the sun handshape lower and to the side as in the video. Copy the whole movement.",
+    "GOOD NIGHT": "Lift one hand from low in front of you to beside your face. Bend the fingers and turn your palm toward your face.",
+    "THANK YOU": "Bring the fingertips of a flat hand to your chin, then move the hand out and slightly down.",
+    "PLEASED": "Lift one open hand with your fingers extended. Turn the hand as it comes up, following the Pleased clip for the exact motion.",
+}
+
+LANDMARK_PHRASES = {
+    "NAMASTE": ("Namaste", "Press both open palms together at chest center, fingers up. With one hand, show its edge to the camera at the same position.", "https://usesignify.org/signs/namaste"),
+    "I AM FINE": ("I am fine", "Touch thumb tip to index tip in a circle. Hold your middle, ring and little fingers straight.", None),
+    "WHAT ARE YOU DOING": ("What are you doing?", "Raise index, middle and ring fingers in a W with thumb and little finger tucked. Or hold both index fingers upright and apart.", None),
+    "I AM A BOY": ("I am a boy", "Hold a flat hand sideways across the forehead, like a cap visor. Keep your fingers pointed across your forehead.", None),
+    "I AM A GIRL": ("I am a girl", "Curl the other fingers and point your index finger along your cheek or toward your earlobe.", None),
+    "HELP ME": ("Help me", "Place a fist or thumbs-up on the open palm of your other hand at chest height. Hold the stack or lift both hands together.", "https://usesignify.org/signs/help"),
+    "I LOVE YOU": ("I love you", "Extend the thumb, index and little fingers. Fold the middle and ring fingers. You can also point to your chest, cross your wrists, then point outward.", None),
+    "YES": ("Yes", "Hold a closed upright fist in front of your chest with your thumb tucked against the fingers.", None),
+    "NO": ("No", "Bring your thumb, index and middle fingertips together in a forward pinch. Keep the ring and little fingers folded.", None),
+    "BYE": ("Bye!", "Raise an open palm beside your head and wave side to side twice.", "https://www.youtube.com/watch?v=O6YJgD20e2g"),
+    "SORRY": ("Sorry", "Pinch each earlobe lightly between your thumb and index finger, then release.", "https://usesignify.org/signs/sorry"),
+    "WELCOME": ("Welcome", "Hold two open palms up in front of your chest. Sweep them inward together toward your body.", "https://usesignify.org/signs/welcome"),
+    "WATER": ("Water", "Form a W-handshape with index, middle, and ring fingers upright near chin.", None),
+    "FOOD": ("Food", "Bring bunched fingertips to touch lips twice as if eating.", None),
+    "HUNGRY": ("Hungry", "Draw curved hand downward from throat to stomach.", None),
+    "DOCTOR": ("Doctor", "Tap index and middle fingertips against underside of opposite wrist (pulse).", None),
+    "TIME": ("Time", "Tap index finger on opposite wrist where watch is worn.", None),
+}
+
+HINDI_TRANSLATIONS = {
+    "NAMASTE": "नमस्ते", "HOW ARE YOU": "आप कैसे हैं?", "I AM FINE": "मैं ठीक हूँ",
+    "WHAT ARE YOU DOING": "आप क्या कर रहे हैं?", "I AM A BOY": "मैं एक लड़का हूँ",
+    "I AM A GIRL": "मैं एक लड़की हूँ", "HELP ME": "मेरी मदद करो",
+    "I LOVE YOU": "मैं तुमसे प्यार करता हूँ", "HELLO": "हैलो / नमस्ते", "YES": "हाँ",
+    "NO": "नहीं", "ALRIGHT": "ठीक है", "BYE": "अलविदा", "SORRY": "माफ़ कीजिए",
+    "WELCOME": "स्वागत है", "GOOD MORNING": "शुभ प्रभात", "GOOD AFTERNOON": "शुभ दोपहर",
+    "GOOD EVENING": "शुभ संध्या", "GOOD NIGHT": "शुभ रात्रि", "THANK YOU": "धन्यवाद",
+    "PLEASED": "आपसे मिलकर अच्छा लगा", "WATER": "पानी", "FOOD": "खाना",
+    "HUNGRY": "भूख लगी है", "DOCTOR": "डॉक्टर", "TIME": "समय",
+    "ONE": "एक", "TWO": "दो", "THREE": "तीन", "FOUR": "चार", "FIVE": "पाँच",
+    "SIX": "छह", "SEVEN": "सात", "EIGHT": "आठ", "TEN": "दस",
+}
+
+# Finger order: thumb, index, middle, ring, little.
+COUNTS = {
+    (False, True, False, False, False): (1, "At chest height, raise the index finger and curl the other fingers."),
+    (False, True, True, False, False): (2, "Raise the index and middle fingers."),
+    (True, True, True, False, False): (3, "Extend the thumb, index and middle fingers."),
+    (False, True, True, True, True): (4, "Raise four fingers and tuck the thumb."),
+    (True, True, True, True, True): (5, "Spread all five fingers at chest height."),
+    (False, False, False, False, True): (6, "Raise the little finger."),
+    (True, True, False, False, False): (7, "Extend the thumb and index finger in an L."),
+    (True, True, True, True, False): (8, "Extend the thumb and first three fingers."),
+}
+COUNT_NAMES = {1: "ONE", 2: "TWO", 3: "THREE", 4: "FOUR", 5: "FIVE",
+               6: "SIX", 7: "SEVEN", 8: "EIGHT", 10: "TEN"}
+SIGN_VIDEOS = {
+    "HELLO": ISL_LESSON,
+    "HOW ARE YOU": "https://www.youtube.com/watch?v=3fS1QTOaUyk",
+    "GOOD MORNING": "https://www.youtube.com/watch?v=L37McuHckSI",
+    "GOOD AFTERNOON": "https://www.youtube.com/watch?v=swQX2Ca4Otg",
+    "GOOD EVENING": "https://www.youtube.com/watch?v=s85rsXqYSqU",
+    "GOOD NIGHT": "https://usesignify.org/signs/goodnight",
+    "THANK YOU": "https://www.youtube.com/watch?v=wK8amEJAK1Y",
+}
+RELEASE_SECONDS = 0.18
+MAX_SIGN_SECONDS = 5.0
 
 
-def _dist3(p1: np.ndarray, p2: np.ndarray) -> float:
-    """3D Euclidean distance using MediaPipe x, y, z landmarks."""
-    return float(np.linalg.norm(p1[:3] - p2[:3]))
+def gesture_guide():
+    entries = [
+        {"gesture": label, "english": english, "mode": "conversation",
+         "instruction": GREETING_INSTRUCTIONS[label], "example": f"Greetings / {folder}",
+         "video": SIGN_VIDEOS.get(label)}
+        for label, (english, folder) in GREETINGS.items()
+    ] + [
+        {"gesture": label, "english": english, "mode": "conversation",
+         "instruction": instruction, "video": video}
+        for label, (english, instruction, video) in LANDMARK_PHRASES.items()
+    ] + [
+        {"gesture": COUNT_NAMES[number], "english": _count_translation(number), "mode": "counting",
+         "instruction": instruction}
+        for number, instruction in [
+            *COUNTS.values(), (10, "At chest height, hold up two open hands with all fingers spread."),
+        ]
+    ]
+    for entry in entries:
+        entry["hindi"] = HINDI_TRANSLATIONS[entry["gesture"]]
+    return entries
 
 
-def filter_near_hands(raw_hands: List[np.ndarray]) -> List[np.ndarray]:
-    """Filter out tiny background hands and resting hands; sort so the nearest hand is primary."""
-    if not raw_hands:
-        return []
-    valid = []
-    for h in raw_hands:
-        # Distance from wrist (0) to middle finger base (9) measures physical palm size on screen
-        palm_size = _dist2(h[0], h[9])
+def _count_translation(number):
+    return f"{COUNT_NAMES[number].title()} ({number})"
 
-        # Filter out tiny hands in background (foreground signing hand has palm_size >= 0.08)
-        if palm_size < 0.08:
+
+def _palm_size(hand):
+    # Use length and width so an edge-on or palm-up sign can remain in view.
+    return float(max(np.linalg.norm(hand[9, :2] - hand[0, :2]),
+                     np.linalg.norm(hand[5, :2] - hand[17, :2])))
+
+
+class ForegroundHands:
+    """Pick at most one hand per MediaPipe label in the foreground signing area."""
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self._previous = {}
+        self._scale = 0.0
+        self._last_seen = None
+
+    def select(self, detections, now=None):
+        now = monotonic() if now is None else now
+        if self._last_seen is not None and now - self._last_seen > 0.75:
+            self._previous.clear()
+
+        candidates = []
+        for label, hand in detections:
+            size = _palm_size(hand)
+            x, y = np.mean(hand[[0, 5, 9, 13, 17], :2], axis=0)
+            if label in ("left", "right") and size >= 0.055 and 0.12 <= x <= 0.88 and 0.06 <= y <= 0.80:
+                candidates.append((size, label, hand))
+
+        largest = max((size for size, _, _ in candidates), default=0.0)
+        minimum = max(0.66 * largest, 0.62 * self._scale)
+        active = {}
+        for size, label, hand in sorted(candidates, key=lambda item: item[0], reverse=True):
+            if size < minimum or label in active:
+                continue
+            previous = self._previous.get(label)
+            if previous is not None and np.linalg.norm(previous[0, :2] - hand[0, :2]) > 0.25:
+                continue
+            active[label] = hand
+
+        if active:
+            self._previous = active
+            self._last_seen = now
+            scale = max(_palm_size(hand) for hand in active.values())
+            self._scale = max(scale, 0.94 * self._scale)
+        return active.get("left"), active.get("right")
+
+
+class SigningFace:
+    """Find the foreground signer's face periodically for relative gesture positions."""
+
+    def __init__(self):
+        import cv2
+
+        self._cv2 = cv2
+        self._detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        self.reset()
+
+    def reset(self):
+        self._last_check = -float("inf")
+        self._last_found = -float("inf")
+        self._face = None
+
+    def locate(self, frame):
+        now = monotonic()
+        if now - self._last_check >= 0.30 and not self._detector.empty():
+            self._last_check = now
+            cv2 = self._cv2
+            h, w = frame.shape[:2]
+            small = cv2.resize(frame, (160, max(1, round(160 * h / w))), interpolation=cv2.INTER_AREA)
+            gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+            largest = max(
+                (face for face in self._detector.detectMultiScale(
+                    gray, scaleFactor=1.15, minNeighbors=4, minSize=(22, 22)
+                ) if 0.18 * gray.shape[1] < face[0] + face[2] / 2 < 0.82 * gray.shape[1]),
+                key=lambda face: face[2] * face[3], default=None,
+            )
+            if largest is not None:
+                x, y, width, height = largest
+                fresh = np.array([(x + width / 2) / gray.shape[1], (y + height / 2) / gray.shape[0],
+                                  width / gray.shape[1], height / gray.shape[0]])
+                self._face = fresh if self._face is None else 0.7 * fresh + 0.3 * self._face
+                self._last_found = now
+        if now - self._last_found > 1.2:
+            self._face = None
+        return self._face
+
+
+def _finger_states(points, size):
+    bases = np.array([5, 9, 13, 17])
+    reach = points[bases + 3] - points[bases]
+    first_bones = points[bases + 1] - points[bases]
+    tips = points[bases + 3] - points[bases + 1]
+    alignment = np.sum(first_bones * tips, axis=1) / np.maximum(
+        np.linalg.norm(first_bones, axis=1) * np.linalg.norm(tips, axis=1), 1e-6
+    )
+    straight = (alignment > 0.65) & (np.linalg.norm(reach, axis=1) > 0.36 * size)
+    folded = (alignment < 0.35) | (np.linalg.norm(reach, axis=1) < 0.40 * size)
+    return straight, folded, reach
+
+
+def _finger_pattern(hand):
+    # MediaPipe z uses the x scale. Camera input is 4:3.
+    points = hand * np.array([1.0, 0.75, 1.0], dtype=np.float32)
+    size = np.linalg.norm(points[9] - points[0])
+    if size < 1e-5 or points[0, 1] - points[9, 1] < 0.30 * size:
+        return None
+    straight, folded, reach = _finger_states(points, size)
+    extended = straight & (reach[:, 1] < -0.23 * size)
+    if not np.all(extended | folded):
+        return None
+    thumb = np.linalg.norm(points[4] - points[5]) / size
+    if 0.42 <= thumb <= 0.60:
+        return None
+    return (bool(thumb > 0.60), *extended.tolist())
+
+
+def _describe_hand(hand):
+    points = hand * np.array([1.0, 0.75, 1.0], dtype=np.float32)
+    axis = points[9] - points[0]
+    size = max(float(np.linalg.norm(axis)), 1e-5)
+    straight, folded, reach = _finger_states(points, size)
+    return points, axis, size, straight, folded, reach
+
+
+def _thumbs_up(shape):
+    points, _, size, straight, folded, _ = shape
+    return (np.all(folded & ~straight)
+            and points[3, 1] - points[4, 1] > 0.23 * size
+            and points[4, 1] < points[9, 1] - 0.12 * size)
+
+
+def _observe_gestures(hands, face):
+    # Face-relative positions separate a greeting near the ear from a count at the chest.
+    cx, cy, width, height = face if face is not None else (0.50, 0.29, 0.22, 0.24)
+    shapes = [_describe_hand(hand) for hand in hands]
+
+    def chest(point):
+        return (cy + 0.67 * height < point[1] / 0.75 < cy + 2.40 * height
+                and abs(point[0] - cx) < 1.65 * width)
+
+    def ear(point):
+        return (cy - 0.20 * height < point[1] / 0.75 < cy + 0.67 * height
+                and 0.32 * width < abs(point[0] - cx) < 1.15 * width)
+
+    def upright(shape):
+        return shape[1][1] < -0.52 * shape[2]
+
+    def open_upright(shape):
+        return np.all(shape[3]) and upright(shape)
+
+    def near_tips(shape):
+        points, _, size, *_ = shape
+        return np.linalg.norm(points[4] - points[8]) < 0.27 * size
+
+    def cupped(shape):
+        pts, axis, size, straight, folded, reach = shape
+        # Palm pitched forward or horizontal, with open fingers or slightly flexed tips.
+        normal = np.cross(pts[5] - pts[0], pts[17] - pts[0])
+        horizontal = abs(normal[1]) > 0.62 * np.linalg.norm(normal)
+        fingers_open = np.count_nonzero(straight) >= 3 or (
+            not np.any(folded[:3]) and np.count_nonzero(np.linalg.norm(reach, axis=1) > 0.55 * size) >= 3
+        )
+        return chest(pts[0]) and fingers_open and not near_tips(shape) and (
+            axis[2] < -0.30 * size or (horizontal and axis[1] < 0.20 * size)
+        )
+
+    def index_only(shape):
+        straight, folded = shape[3:5]
+        return straight[0] and np.all(folded[1:] & ~straight[1:])
+
+    if len(shapes) == 1:
+        shape = shapes[0]
+        pts, axis, size, straight, folded, reach = shape
+        pinched = near_tips(shape)
+        if upright(shape) and pinched and not straight[0] and np.all(straight[1:]):
+            return "I AM FINE", None
+        if (pinched and np.all(folded[2:]) and not np.any(straight[2:])
+                and np.linalg.norm(pts[4] - pts[9]) > 0.44 * size
+                and np.linalg.norm(pts[4] - pts[12]) < 0.30 * size):
+            return "NO", None
+
+        if index_only(shape):
+            if (ear(pts[8]) and abs(pts[8, 0] - cx) < 0.76 * width
+                    and pts[0, 1] / 0.75 < cy + height
+                    and (abs(reach[0, 1]) > 0.22 * size or abs(reach[0, 0]) > 0.34 * size)):
+                return "I AM A GIRL", None
+            toward_center = abs(pts[8, 0] - cx) < abs(pts[5, 0] - cx) - 0.28 * size
+            toward_camera = reach[0, 2] < -0.55 * size and np.linalg.norm(reach[0, :2]) < 0.70 * size
+            if toward_camera:
+                return "YOU", None
+            if toward_center and abs(reach[0, 0]) > abs(reach[0, 1]) and chest(pts[0]):
+                return "SELF", None
+
+        if upright(shape):
+            if tuple(straight) == (True, False, False, True) and np.all(folded[1:3]):
+                if np.linalg.norm(pts[4] - pts[5]) > 0.64 * size and not pinched:
+                    return "I LOVE YOU", None
+            if chest(pts[0]) and tuple(straight) == (True, True, True, False) and folded[3]:
+                if np.linalg.norm(pts[4] - pts[5]) < 0.60 * size:
+                    if pts[9, 1] / 0.75 < cy + 1.15 * height and abs(pts[9, 0] - cx) < 1.10 * width:
+                        return "WATER", None
+                    return "WHAT ARE YOU DOING", None
+            if chest(pts[0]) and np.all(folded & ~straight):
+                if _thumbs_up(shape):
+                    return "ALRIGHT", None
+                if np.linalg.norm(pts[4] - pts[5]) < 0.76 * size:
+                    return "YES", None
+
+        if pinched and np.all(folded[1:]) and abs(pts[4, 1] / 0.75 - (cy + 0.35 * height)) < 0.40 * height:
+            return "FOOD", None
+
+        if (chest(pts[0]) and np.count_nonzero(folded) >= 2 and np.count_nonzero(straight) <= 2
+                and abs(pts[0, 0] - cx) < 0.75 * width and pts[0, 1] / 0.75 > cy + 0.85 * height):
+            return "HUNGRY", None
+
+        if open_upright(shape):
+            if (chest(pts[0]) and abs(pts[9, 0] - cx) < 0.36 * width
+                    and np.linalg.norm((pts[5] - pts[17])[:2]) < 0.46 * size
+                    and abs(axis[0]) < 0.35 * size):
+                return "NAMASTE", None
+            beside_head = (cy - 0.37 * height <= pts[9, 1] / 0.75 <= cy + 0.65 * height
+                           and pts[0, 1] / 0.75 < cy + 1.02 * height
+                           and 0.53 * width < abs(pts[9, 0] - cx) < 1.78 * width)
+            if not beside_head and cupped(shape):
+                return "HOW ARE YOU", None
+            thumb_open = np.linalg.norm(pts[4] - pts[5]) > 0.60 * size
+            return "WAVE", (float(axis[0] / size), float(pts[0, 0]), size, beside_head and thumb_open)
+        if (np.count_nonzero(straight) >= 3 and abs(axis[0]) > 0.62 * size
+                and abs(pts[9, 1] / 0.75 - (cy - 0.31 * height)) < 0.30 * height
+                and abs(pts[9, 0] - cx) < 0.70 * width):
+            return "I AM A BOY", None
+        if cupped(shape):
+            return "HOW ARE YOU", None
+
+    elif len(shapes) == 2:
+        if all(_thumbs_up(shape) for shape in shapes):
+            return "TWO THUMBS", None
+        (p, ax, size, straight, folded, _), (q, bx, other_size, other_straight, other_folded, _) = sorted(
+            shapes, key=lambda shape: shape[0][9, 0]
+        )
+        scale = max(size, other_size)
+        spread = q[9, 0] - p[9, 0]
+        if (p[8, 0] < cx < q[8, 0] and all(near_tips(shape) for shape in shapes)
+                and ear(p[8]) and ear(q[8]) and abs(p[8, 1] - q[8, 1]) < 0.35 * height):
+            return "SORRY", None
+        if (all(open_upright(shape) for shape in shapes)
+                and chest((p[0] + q[0]) / 2) and abs((p[9, 0] + q[9, 0]) / 2 - cx) < 0.42 * width
+                and np.linalg.norm(p[9, :2] - q[9, :2]) < 0.54 * scale
+                and np.linalg.norm(p[12, :2] - q[12, :2]) < 0.60 * scale):
+            return "NAMASTE", None
+        if (all(index_only(shape) and upright(shape) for shape in shapes)
+                and all(chest(shape[0][0]) for shape in shapes)
+                and spread > 0.85 * scale):
+            return "WHAT ARE YOU DOING", None
+
+        # Pulse check for DOCTOR or tap wrist for TIME
+        if (np.linalg.norm(p[8, :2] - q[0, :2]) < 0.40 * scale or np.linalg.norm(q[8, :2] - p[0, :2]) < 0.40 * scale):
+            if any(index_only(shape) for shape in shapes):
+                return "TIME", None
+            return "DOCTOR", None
+
+        for fist, support in (shapes, shapes[::-1]):
+            pts, fist_axis, fist_size, fingers, bent, _ = fist
+            base, base_axis, base_size, open_fingers, _, _ = support
+            stacked = (base[9, 1] - pts[9, 1] > 0.13 * fist_size
+                       and np.linalg.norm(base[9, :2] - pts[9, :2]) < 1.30 * max(fist_size, base_size))
+            if (chest(base[0]) and np.all(bent & ~fingers) and fist_axis[1] < -0.10 * fist_size
+                    and stacked and np.all(open_fingers) and abs(base_axis[1]) < 0.60 * base_size):
+                return "HELP ME", None
+
+        paired = (0.5 * scale < spread < 3.3 * scale
+                  and abs(p[0, 1] - q[0, 1]) < scale
+                  and np.linalg.norm(p[0, :2] - q[0, :2]) < 1.65 * scale)
+        fingers_match = ((np.all(straight) and np.all(other_straight))
+                         or (np.all(folded) and np.all(other_folded)))
+        if paired and fingers_match and ax[0] < -0.37 * size and bx[0] > 0.37 * other_size:
+            return "CROSS", None
+        if all(cupped(shape) for shape in shapes):
+            return "PALMS UP", (float(spread), float((p[9, 1] + q[9, 1]) / 2), scale)
+        if spread > 0.85 * scale and all(
+            open_upright(shape) and chest(shape[0][0]) and shape[0][9, 1] / 0.75 > cy + 0.35 * height
+            for shape in shapes
+        ):
+            return "HOW ARE YOU", None
+    return None, None
+
+
+def _stable_runs(observations):
+    runs = []
+    for now, label, value in observations:
+        if (not runs or runs[-1][-1][1] != label
+                or now - runs[-1][-1][0] > 0.22):
+            runs.append([])
+        runs[-1].append((now, label, value))
+    return [run for run in runs if len(run) >= 3 and run[-1][0] - run[0][0] >= 0.08]
+
+
+def _wave_reversals(values, minimum):
+    anchor = values[0]
+    changes = []
+    for value in values[1:]:
+        delta = value - anchor
+        if abs(delta) < minimum:
             continue
-
-        # Filter out hands resting on lap or desk at bottom of frame (wrist > 0.82)
-        if float(h[0, 1]) > 0.82:
-            continue
-
-        # Filter out hands hanging completely downwards below wrist
-        if float(h[8, 1]) > float(h[0, 1]) + 0.08 and float(h[12, 1]) > float(h[0, 1]) + 0.08:
-            continue
-
-        valid.append((palm_size, h))
-
-    # Sort descending by palm size so the closest/largest foreground hand is index 0
-    valid.sort(key=lambda item: item[0], reverse=True)
-    return [item[1] for item in valid]
+        direction = 1 if delta > 0 else -1
+        if not changes or changes[-1] != direction:
+            changes.append(direction)
+        anchor = value
+    return len(changes)
 
 
-def analyze_hand(pts: np.ndarray) -> Dict[str, Any]:
-    """Calculate clear 3D & 2D finger state flags from MediaPipe landmarks."""
-    wrist = pts[0]
-    pinky_mcp = pts[17]
-    index_mcp = pts[5]
-    middle_mcp = pts[9]
-    ring_mcp = pts[13]
+def _match_landmark_phrase(observations):
+    runs = _stable_runs(observations)
+    labels = [run[0][1] for run in runs]
+    stage = 0
+    sequence = ("SELF", "CROSS", "YOU")
+    for label in labels:
+        if label == sequence[stage]:
+            stage += 1
+            if stage == len(sequence):
+                return "I LOVE YOU"
 
-    # 3D distances from fingertip to corresponding MCP base
-    d_idx = _dist3(pts[8], index_mcp)
-    d_mid = _dist3(pts[12], middle_mcp)
-    d_rng = _dist3(pts[16], ring_mcp)
-    d_pky = _dist3(pts[20], pinky_mcp)
+    if "YOU" in labels and "TWO THUMBS" in labels[labels.index("YOU") + 1:]:
+        return "HOW ARE YOU"
 
-    # 2D vertical checks: tip is higher in frame (lower y) than PIP by at least 0.03
-    idx_up_2d = bool(pts[6, 1] - pts[8, 1] > 0.03)
-    mid_up_2d = bool(pts[10, 1] - pts[12, 1] > 0.03)
-    rng_up_2d = bool(pts[14, 1] - pts[16, 1] > 0.03)
-    pky_up_2d = bool(pts[18, 1] - pts[20, 1] > 0.03)
+    candidates = []
+    static_labels = LANDMARK_PHRASES.keys() | {"HELLO", "ALRIGHT", "HOW ARE YOU"}
+    span = observations[-1][0] - observations[0][0] if observations else 0
+    for run in runs:
+        label = run[0][1]
+        elapsed = run[-1][0] - run[0][0]
+        if label == "WAVE":
+            tilts, wrists, sizes, beside_head = zip(*(sample[2] for sample in run))
+            if elapsed >= 0.42 and (_wave_reversals(tilts, 0.28) >= 3
+                                    or _wave_reversals(wrists, 0.38 * np.median(sizes)) >= 3):
+                return "BYE"
+            if sum(beside_head) / len(run) >= 0.70:
+                label = "HELLO"
+        if label == "PALMS UP":
+            spreads, heights, sizes = (np.asarray(part) for part in zip(*(sample[2] for sample in run)))
+            scale = np.median(sizes)
+            if elapsed >= 0.42 and np.any(
+                (spreads[0] - spreads > 0.65 * scale) & (heights - heights[0] > 0.30 * scale)
+            ):
+                return "WELCOME"
+            label = "HOW ARE YOU"
+        if label == "TWO THUMBS":
+            label = "ALRIGHT"
+        if label in static_labels and elapsed >= max(0.28, 0.35 * span):
+            candidates.append((elapsed, label))
 
-    # A finger is EXTENDED if it is pointing up in 2D OR extended in 3D (e.g. forward/cupped)
-    idx_extended = bool(idx_up_2d or d_idx > 0.12)
-    mid_extended = bool(mid_up_2d or d_mid > 0.12)
-    rng_extended = bool(rng_up_2d or d_rng > 0.12)
-    pky_extended = bool(pky_up_2d or d_pky > 0.12)
-
-    # Thumb: Extended outward if tip (4) is far from pinky base (17) in 2D/3D
-    thumb_out = bool(_dist2(pts[4], pinky_mcp) > (_dist2(pts[3], pinky_mcp) * 1.15))
-
-    # A finger is CURLED when not pointing up in 2D and folded toward base/wrist
-    idx_curled = bool(not idx_up_2d and (d_idx < 0.13 or pts[8, 1] >= pts[6, 1] - 0.015))
-    mid_curled = bool(not mid_up_2d and (d_mid < 0.13 or pts[12, 1] >= pts[10, 1] - 0.015))
-    rng_curled = bool(not rng_up_2d and (d_rng < 0.13 or pts[16, 1] >= pts[14, 1] - 0.015))
-    pky_curled = bool(not pky_up_2d and (d_pky < 0.13 or pts[20, 1] >= pts[18, 1] - 0.015))
-
-    # Hand orientation: hand is upright if middle MCP is above wrist (allowing natural tilt)
-    hand_is_upright = bool(pts[9, 1] < pts[0, 1] + 0.08)
-
-    # Closed Fist: all 4 fingers curled, tips close to wrist, hand held upright
-    fist_curled = bool(
-        idx_curled and mid_curled and rng_curled and pky_curled
-        and d_idx < 0.12 and d_mid < 0.12
-        and _dist3(pts[8], wrist) < 0.22
-        and _dist3(pts[12], wrist) < 0.22
-        and hand_is_upright
-    )
-
-    # Genuine Thumbs-Up: Thumb tip pointing UP significantly above MCP, other 4 fingers curled into fist
-    thumb_up = bool(
-        (pts[2, 1] - pts[4, 1]) > 0.06
-        and pts[4, 1] < pts[0, 1] - 0.04
-        and fist_curled
-    )
-
-    # 3D OK Circle: Thumb tip (4) touches Index tip (8) in 3D
-    ok_circle = bool(_dist3(pts[4], pts[8]) < 0.08)
-
-    # 3D ISL "NO" Beak Pinch: Thumb tip touches both Index tip and Middle tip, extended forward from wrist
-    beak_pinch = bool(
-        _dist3(pts[4], pts[8]) < 0.08
-        and _dist3(pts[4], pts[12]) < 0.08
-        and _dist3(pts[8], wrist) >= 0.16
-        and hand_is_upright
-    )
-
-    # Hand coordinates
-    hand_y = float(pts[0, 1])
-    hand_x = float(pts[0, 0])
-    index_tip_y = float(pts[8, 1])
-    index_tip_x = float(pts[8, 0])
-
-    # Cap visor gesture for Boy (hand horizontal at forehead/temple height, upright)
-    cap_visor = bool(
-        hand_y < 0.40
-        and index_tip_y < 0.24
-        and _dist2(pts[4], pts[8]) < 0.18
-        and abs(pts[8, 1] - pts[5, 1]) < 0.10
-        and hand_is_upright
-    )
-
-    # Girl gesture: Hand raised to CHEEK / EAR height beside face (index touching cheek/jawline)
-    girl_gesture = bool(
-        hand_y < 0.42
-        and index_tip_y < 0.30
-        and abs(index_tip_x - 0.50) > 0.12
-        and idx_up_2d
-        and mid_curled
-        and rng_curled
-        and pky_curled
-    )
-
-    # Intentional single-hand How Are You: Hand held in active chest space with palm facing up/forward
-    cupped_how_are_you = bool(
-        0.30 <= hand_y <= 0.75
-        and d_idx > 0.13 and d_mid > 0.13
-        and thumb_out
-        and not fist_curled
-        and not ok_circle
-        and abs(pts[8, 1] - pts[0, 1]) < 0.15
-    )
-
-    return {
-        "thumb_out": thumb_out,
-        "thumb_up": thumb_up,
-        "index_up_2d": idx_up_2d,
-        "middle_up_2d": mid_up_2d,
-        "ring_up_2d": rng_up_2d,
-        "pinky_up_2d": pky_up_2d,
-        "idx_curled": idx_curled,
-        "mid_curled": mid_curled,
-        "rng_curled": rng_curled,
-        "pky_curled": pky_curled,
-        "index": idx_extended,
-        "middle": mid_extended,
-        "ring": rng_extended,
-        "pinky": pky_extended,
-        "ok_circle": ok_circle,
-        "beak_pinch": beak_pinch,
-        "cap_visor": cap_visor,
-        "girl_gesture": girl_gesture,
-        "cupped_how_are_you": cupped_how_are_you,
-        "fist_curled": fist_curled,
-        "hand_is_upright": hand_is_upright,
-        "hand_y": hand_y,
-        "hand_x": hand_x,
-        "index_tip_y": index_tip_y,
-        "index_tip_x": index_tip_x,
-    }
+    candidates.sort(reverse=True)
+    if candidates and not any(
+        label != candidates[0][1] and elapsed > 0.80 * candidates[0][0]
+        for elapsed, label in candidates[1:]
+    ):
+        return candidates[0][1]
+    return None
 
 
 class PrecisionISLRecognizer:
-    """Instant, zero-confusion recognizer with fast 2-frame (~60ms) stability filter."""
+    """Decode real-time ISL signs into connected conversational sentences or numeric poses."""
 
-    def __init__(self, stability_threshold: int = 2) -> None:
-        self.stability_threshold = stability_threshold
-        self.current_candidate: Optional[str] = None
-        self.candidate_count: int = 0
-        self.history: Deque[Dict[str, Any]] = deque(maxlen=15)
+    def __init__(self, mode="conversation", threshold=0.75, predictor=None, cadence_timeout=1.8):
+        self.mode = mode
+        self.threshold = threshold
+        self._predictor = predictor
+        self.sentence_builder = ContinuousSentenceBuilder(cadence_timeout=cadence_timeout, cooldown_timeout=0.6)
+        self.reset()
 
-    def reset(self) -> None:
-        self.current_candidate = None
-        self.candidate_count = 0
-        self.history.clear()
+    def reset(self):
+        # Clear raw frame queue and sentence buffer completely
+        self._frames = deque(maxlen=300)
+        self._observations = deque(maxlen=300)
+        self._last_seen = None
+        self._started = None
+        self._discard = False
+        self._candidate = None
+        self._candidate_since = None
+        self._emitted_count = None
+        self._neutral_since = None
+        self.sentence_builder.reset()
+        self.status = "Show your next sign"
 
-    def process(self, raw_hands: List[np.ndarray]) -> Optional[Dict[str, Any]]:
-        """Evaluate raw hand landmarks with near-hand priority and distinct signatures."""
-        if not raw_hands:
-            self.reset()
+    def _clear_active_sign(self):
+        """Clear single sign frame buffers while preserving the active connected sentence."""
+        self._frames.clear()
+        self._observations.clear()
+        self._last_seen = None
+        self._started = None
+        self._discard = False
+
+    def load_model(self):
+        if self._predictor is None:
+            from inference.gesture_predictor import GesturePredictor
+            self._predictor = GesturePredictor()
+
+    def get_live_sentence_preview(self) -> dict:
+        return self.sentence_builder.get_preview()
+
+    def finalize_current_sentence(self, now=None) -> dict | None:
+        return self.sentence_builder.finalize_sentence(now=now)
+
+    def process(self, features, hands, now=None, face=None):
+        now = monotonic() if now is None else now
+        if self.mode == "counting":
+            return self._count(hands, now)
+
+        # 1. Check if hands are down/resting and inter-sign pause completed a sentence
+        if not hands or (self._last_seen is not None and now - self._last_seen >= 0.25):
+            completed = self.sentence_builder.check_pause(now=now)
+            if completed:
+                self.status = f"Spoken: {completed['sentence']}"
+                return {
+                    "gesture": completed["tokens"][-1] if completed["tokens"] else "PAUSE",
+                    "english": completed["sentence"],
+                    "hindi": completed["hindi"],
+                    "confidence": 1.0,
+                    "category": completed["category"],
+                    "is_sentence_complete": True,
+                    "sentence": completed["sentence"],
+                    "hindi_sentence": completed["hindi"],
+                    "tokens": completed["tokens"],
+                    "live_preview": self.sentence_builder.get_preview(),
+                }
+
+        # 2. Accumulate signing frames while hands are in view
+        if hands:
+            self._started = now if self._started is None else self._started
+            self._last_seen = now
+            preview = self.sentence_builder.get_preview()
+            if preview["active"]:
+                self.status = f"Drafting: {preview['sentence']}"
+            else:
+                self.status = "Finish sign and lower hands briefly"
+            if now - self._started > MAX_SIGN_SECONDS:
+                self._discard = True
+                self._frames.clear()
+                self._observations.clear()
+                self.status = "Lower your hands and try one sign at a time"
+            if not self._discard:
+                self._frames.append(features)
+                self._observations.append((now, *_observe_gestures(hands, face)))
             return None
 
-        # Filter out tiny background hands and hands resting outside active frame
-        active_hands = filter_near_hands(raw_hands)
-        if not active_hands:
-            self.reset()
+        if self._last_seen is None or now - self._last_seen < RELEASE_SECONDS:
             return None
 
-        self.history.append({"hands": active_hands, "count": len(active_hands)})
-        num_hands = len(active_hands)
-        match: Optional[Dict[str, Any]] = None
+        # 3. Decode completed sign upon release
+        frames = list(self._frames)
+        observations = list(self._observations)
+        duration = self._last_seen - self._started
+        self._clear_active_sign()
+        if duration < 0.35:
+            return None
 
-        # =============================================================
-        # 1. TWO-HANDED GESTURES (Ten, What Are You Doing, Namaste, Help Me, How Are You)
-        # =============================================================
-        if num_hands >= 2:
-            h1 = active_hands[0]
-            h2 = active_hands[1]
-            f1 = analyze_hand(h1)
-            f2 = analyze_hand(h2)
+        label = _match_landmark_phrase(observations)
+        if not label and len(frames) >= 6:
+            match = self.decode_phrase(np.asarray(frames, dtype=np.float32))
+            if match:
+                label = match["gesture"]
 
-            wrist_dist = _dist2(h1[0], h2[0])
-            index_dist = _dist2(h1[8], h2[8])
+        if label:
+            english = (LANDMARK_PHRASES.get(label) or GREETINGS.get(label, (label.title(), None)))[0]
+            completed = self.sentence_builder.add_sign(label, now=now)
+            preview = self.sentence_builder.get_preview()
+            hindi = HINDI_TRANSLATIONS.get(label, "")
+            cat = LANDMARK_PHRASES.get(label, ("General", None, None))[2] or "Conversation"
+            return {
+                "gesture": label,
+                "english": english,
+                "hindi": hindi,
+                "confidence": 0.95,
+                "category": cat,
+                "is_sentence_complete": bool(completed),
+                "sentence": completed["sentence"] if completed else None,
+                "hindi_sentence": completed["hindi"] if completed else None,
+                "tokens": completed["tokens"] if completed else preview["tokens"],
+                "live_preview": preview,
+            }
 
-            # A. TEN (10) (Both open hands showing 5 + 5 spread fingers)
-            if (
-                (f1["thumb_out"] and f1["index_up_2d"] and f1["middle_up_2d"] and f1["ring_up_2d"] and f1["pinky_up_2d"])
-                and (f2["thumb_out"] and f2["index_up_2d"] and f2["middle_up_2d"] and f2["ring_up_2d"] and f2["pinky_up_2d"])
-                and wrist_dist >= 0.18
-            ):
-                match = {
-                    "gesture": "TEN",
-                    "english": "Ten (10)",
-                    "hindi": "दस",
-                    "confidence": 0.99,
-                    "category": "Counting",
-                    "icon": "🔟",
-                }
-
-            # B. WHAT ARE YOU DOING (Both hands showing Index fingers pointing UP side-by-side)
-            elif (
-                (f1["index_up_2d"] and f1["mid_curled"] and f1["rng_curled"] and f1["pky_curled"])
-                and (f2["index_up_2d"] and f2["mid_curled"] and f2["rng_curled"] and f2["pky_curled"])
-                and wrist_dist >= 0.16
-            ):
-                match = {
-                    "gesture": "WHAT ARE YOU DOING",
-                    "english": "What are you doing?",
-                    "hindi": "आप क्या कर रहे हैं?",
-                    "confidence": 0.98,
-                    "category": "Conversation",
-                    "icon": "❓",
-                }
-
-            # C. NAMASTE (Both palms joined flat together in center chest)
-            elif (
-                not f1["fist_curled"] and not f2["fist_curled"]
-                and wrist_dist < 0.26
-                and index_dist < 0.26
-                and abs(h1[0, 0] - h2[0, 0]) < 0.22
-                and (f1["index_up_2d"] or f1["middle_up_2d"])
-                and (f2["index_up_2d"] or f2["middle_up_2d"])
-            ):
-                match = {
-                    "gesture": "NAMASTE",
-                    "english": "Namaste",
-                    "hindi": "नमस्ते",
-                    "confidence": 0.99,
-                    "category": "Greetings",
-                    "icon": "🙏",
-                }
-
-            # D. HELP ME (Two hands: fist resting on flat palm)
-            elif (
-                wrist_dist < 0.35
-                and (
-                    ((f1["fist_curled"] or f1["thumb_up"]) and (f2["index"] or f2["middle"] or f2["thumb_out"]))
-                    or
-                    ((f2["fist_curled"] or f2["thumb_up"]) and (f1["index"] or f1["middle"] or f1["thumb_out"]))
-                )
-            ):
-                match = {
-                    "gesture": "HELP ME",
-                    "english": "Help me",
-                    "hindi": "मेरी मदद करो",
-                    "confidence": 0.98,
-                    "category": "Needs & Emergency",
-                    "icon": "🆘",
-                }
-
-            # E. HOW ARE YOU (Two hands: both hands held open with palms facing up/forward)
-            elif (
-                (f1["index"] and f1["middle"] and f1["thumb_out"] and not f1["index_up_2d"])
-                and (f2["index"] and f2["middle"] and f2["thumb_out"] and not f2["index_up_2d"])
-                and not f1["fist_curled"] and not f2["fist_curled"]
-                and wrist_dist >= 0.16
-            ):
-                match = {
-                    "gesture": "HOW ARE YOU",
-                    "english": "How are you?",
-                    "hindi": "आप कैसे हैं?",
-                    "confidence": 0.98,
-                    "category": "Greetings",
-                    "icon": "🤲",
-                }
-
-        # =============================================================
-        # 2. SINGLE-HANDED GESTURES (Primary Near Hand in Foreground)
-        # =============================================================
-        if match is None and num_hands >= 1:
-            h = active_hands[0]
-            f = analyze_hand(h)
-
-            t_out = f["thumb_out"]
-            t_up = f["thumb_up"]
-            i_up = f["index_up_2d"]
-            m_up = f["middle_up_2d"]
-            r_up = f["ring_up_2d"]
-            p_up = f["pinky_up_2d"]
-            i_c = f["idx_curled"]
-            m_c = f["mid_curled"]
-            r_c = f["rng_curled"]
-            p_c = f["pky_curled"]
-
-            ok = f["ok_circle"]
-            beak = f["beak_pinch"]
-            fist = f["fist_curled"]
-            cap = f["cap_visor"]
-            girl = f["girl_gesture"]
-            hand_y = f["hand_y"]
-
-            # ---------------------------------------------------------
-            # A. 4 FINGERS UP -> NAMASTE (if prayer fingers close) or FOUR (4) (if spread)
-            # ---------------------------------------------------------
-            if not t_out and i_up and m_up and r_up and p_up:
-                if _dist2(h[8], h[20]) < 0.12 and 0.35 <= f["hand_x"] <= 0.65:
-                    match = {
-                        "gesture": "NAMASTE",
-                        "english": "Namaste",
-                        "hindi": "नमस्ते",
-                        "confidence": 0.98,
-                        "category": "Greetings",
-                        "icon": "🙏",
-                    }
-                elif _dist2(h[8], h[20]) >= 0.12:
-                    match = {
-                        "gesture": "FOUR",
-                        "english": "Four (4)",
-                        "hindi": "चार",
-                        "confidence": 0.98,
-                        "category": "Counting",
-                        "icon": "4️⃣",
-                    }
-
-            # ---------------------------------------------------------
-            # B. I AM A BOY (Cap visor gesture at forehead / temple)
-            # ---------------------------------------------------------
-            elif cap:
-                match = {
-                    "gesture": "I AM A BOY",
-                    "english": "I am a boy",
-                    "hindi": "मैं एक लड़का हूँ",
-                    "confidence": 0.98,
-                    "category": "Identity",
-                    "icon": "👦",
-                }
-
-            # ---------------------------------------------------------
-            # C. I AM A GIRL (Index finger touching / pointing along cheek or jawline at face level)
-            # ---------------------------------------------------------
-            elif girl:
-                match = {
-                    "gesture": "I AM A GIRL",
-                    "english": "I am a girl",
-                    "hindi": "मैं एक लड़की हूँ",
-                    "confidence": 0.98,
-                    "category": "Identity",
-                    "icon": "👧",
-                }
-
-            # ---------------------------------------------------------
-            # D. I LOVE YOU (Thumb: OUT, Index: UP, Pinky: UP, Middle & Ring CURLED)
-            # ---------------------------------------------------------
-            elif t_out and i_up and not m_up and not r_up and p_up and m_c and r_c:
-                match = {
-                    "gesture": "I LOVE YOU",
-                    "english": "I love you",
-                    "hindi": "मैं तुमसे प्यार करता हूँ",
-                    "confidence": 0.99,
-                    "category": "Feelings",
-                    "icon": "🤟",
-                }
-
-            # ---------------------------------------------------------
-            # E. I AM FINE / OK (Thumb + Index circle, Middle & Ring & Pinky UP, upright)
-            # ---------------------------------------------------------
-            elif ok and m_up and r_up and p_up and f["hand_is_upright"]:
-                match = {
-                    "gesture": "I AM FINE",
-                    "english": "I am fine",
-                    "hindi": "मैं ठीक हूँ",
-                    "confidence": 0.98,
-                    "category": "Feelings",
-                    "icon": "👌",
-                }
-
-            # ---------------------------------------------------------
-            # F. WHAT ARE YOU DOING ('W' handshape: Index UP, Middle UP, Ring UP, Pinky curled)
-            # ---------------------------------------------------------
-            elif not t_out and i_up and m_up and r_up and not p_up and p_c:
-                match = {
-                    "gesture": "WHAT ARE YOU DOING",
-                    "english": "What are you doing?",
-                    "hindi": "आप क्या कर रहे हैं?",
-                    "confidence": 0.98,
-                    "category": "Conversation",
-                    "icon": "❓",
-                }
-
-            # ---------------------------------------------------------
-            # G. NO (Authentic ISL beak pinch: Thumb + Index + Middle touch together, Ring & Pinky curled)
-            # ---------------------------------------------------------
-            elif beak and r_c and p_c:
-                match = {
-                    "gesture": "NO",
-                    "english": "No",
-                    "hindi": "नहीं",
-                    "confidence": 0.98,
-                    "category": "Basic",
-                    "icon": "🤏",
-                }
-
-            # ---------------------------------------------------------
-            # H. COUNTING: EIGHT (8) (Thumb: OUT, Index: UP, Middle: UP, Ring: UP, Pinky: CURLED)
-            # ---------------------------------------------------------
-            elif t_out and i_up and m_up and r_up and not p_up and p_c:
-                match = {
-                    "gesture": "EIGHT",
-                    "english": "Eight (8)",
-                    "hindi": "आठ",
-                    "confidence": 0.98,
-                    "category": "Counting",
-                    "icon": "8️⃣",
-                }
-
-            # ---------------------------------------------------------
-            # I. COUNTING: THREE (3) (Thumb: OUT, Index: UP, Middle: UP, Ring & Pinky CURLED)
-            # ---------------------------------------------------------
-            elif t_out and i_up and m_up and not r_up and not p_up and r_c and p_c:
-                match = {
-                    "gesture": "THREE",
-                    "english": "Three (3)",
-                    "hindi": "तीन",
-                    "confidence": 0.98,
-                    "category": "Counting",
-                    "icon": "3️⃣",
-                }
-
-            # ---------------------------------------------------------
-            # J. COUNTING: TWO (2) / PEACE (Index: UP, Middle: UP, Ring & Pinky CURLED)
-            # ---------------------------------------------------------
-            elif not t_out and i_up and m_up and not r_up and not p_up and r_c and p_c:
-                match = {
-                    "gesture": "TWO",
-                    "english": "Two (2)",
-                    "hindi": "दो",
-                    "confidence": 0.98,
-                    "category": "Counting",
-                    "icon": "2️⃣",
-                }
-
-            # ---------------------------------------------------------
-            # K. COUNTING: ONE (1) (Index finger UP at chest/body level, all others CURLED, not girl)
-            # ---------------------------------------------------------
-            elif not t_out and i_up and m_c and r_c and p_c and not girl:
-                match = {
-                    "gesture": "ONE",
-                    "english": "One (1)",
-                    "hindi": "एक",
-                    "confidence": 0.98,
-                    "category": "Counting",
-                    "icon": "1️⃣",
-                }
-
-            # ---------------------------------------------------------
-            # L. COUNTING: SIX (6) (Pinky finger UP only, others CURLED)
-            # ---------------------------------------------------------
-            elif not t_out and not i_up and not m_up and not r_up and p_up and i_c and m_c and r_c:
-                match = {
-                    "gesture": "SIX",
-                    "english": "Six (6)",
-                    "hindi": "छह",
-                    "confidence": 0.98,
-                    "category": "Counting",
-                    "icon": "6️⃣",
-                }
-
-            # ---------------------------------------------------------
-            # M. COUNTING: SEVEN (7) (Thumb OUT + Index UP in 'L' shape, others CURLED)
-            # ---------------------------------------------------------
-            elif t_out and i_up and not m_up and not r_up and not p_up and m_c and r_c and p_c:
-                match = {
-                    "gesture": "SEVEN",
-                    "english": "Seven (7)",
-                    "hindi": "सात",
-                    "confidence": 0.98,
-                    "category": "Counting",
-                    "icon": "7️⃣",
-                }
-
-            # ---------------------------------------------------------
-            # N. THUMBS UP / ALRIGHT (Thumb UP only with curled fist in mid-air)
-            # ---------------------------------------------------------
-            elif t_up:
-                match = {
-                    "gesture": "ALRIGHT",
-                    "english": "Alright",
-                    "hindi": "ठीक है",
-                    "confidence": 0.98,
-                    "category": "Greetings",
-                    "icon": "👍",
-                }
-
-            # ---------------------------------------------------------
-            # O. YES / CLOSED FIST (Closed fist in mid-air)
-            # ---------------------------------------------------------
-            elif fist:
-                match = {
-                    "gesture": "YES",
-                    "english": "Yes",
-                    "hindi": "हाँ",
-                    "confidence": 0.97,
-                    "category": "Basic",
-                    "icon": "✊",
-                }
-
-            # ---------------------------------------------------------
-            # P. ALL 5 FINGERS SPREAD:
-            # - Raised high near head (hand_y < 0.40 and index_tip_y < 0.25) -> HELLO (👋)
-            # - At chest level -> FIVE (5) (5️⃣)
-            # ---------------------------------------------------------
-            elif t_out and i_up and m_up and r_up and p_up:
-                if hand_y < 0.40:
-                    match = {
-                        "gesture": "HELLO",
-                        "english": "Hello",
-                        "hindi": "हैलो / नमस्ते",
-                        "confidence": 0.98,
-                        "category": "Greetings",
-                        "icon": "👋",
-                    }
-                elif f["hand_is_upright"]:
-                    match = {
-                        "gesture": "FIVE",
-                        "english": "Five (5)",
-                        "hindi": "पाँच",
-                        "confidence": 0.98,
-                        "category": "Counting",
-                        "icon": "5️⃣",
-                    }
-
-            # ---------------------------------------------------------
-            # Q. SINGLE-HAND "HOW ARE YOU" (Open palm cupped forward at chest)
-            # ---------------------------------------------------------
-            elif f["cupped_how_are_you"]:
-                match = {
-                    "gesture": "HOW ARE YOU",
-                    "english": "How are you?",
-                    "hindi": "आप कैसे हैं?",
-                    "confidence": 0.96,
-                    "category": "Greetings",
-                    "icon": "🤲",
-                }
-
-        # -------------------------------------------------------------
-        # 3. FAST STABILITY FILTER (~60ms response time, zero buffering!)
-        # -------------------------------------------------------------
-        # If no intentional sign was formed, match remains None! (SILENCE)
-        if match is not None:
-            cand = match["gesture"]
-            if cand == self.current_candidate:
-                self.candidate_count += 1
-            else:
-                self.current_candidate = cand
-                self.candidate_count = 1
-
-            match["stable"] = bool(self.candidate_count >= self.stability_threshold)
-            return match
-
-        self.reset()
+        self.status = "Sign unclear. Try again."
         return None
 
+    def decode_phrase(self, frames):
+        from dataset.extract_landmarks import interpolate_short_dropouts, resample_sequence
 
-        # -------------------------------------------------------------
-        # 3. STABILITY FILTER (Fast ~100ms response time)
-        # -------------------------------------------------------------
-        # If no intentional sign was formed, match remains None! (SILENCE)
-        if match is not None:
-            cand = match["gesture"]
-            if cand == self.current_candidate:
-                self.candidate_count += 1
-            else:
-                self.current_candidate = cand
-                self.candidate_count = 1
+        # The model was trained on isolated clips. Reject static poses before classification.
+        moving = False
+        for flag, start in ((126, 0), (127, 63)):
+            hand = frames[frames[:, flag] > 0.5, start:start + 63]
+            if len(hand) >= 4:
+                spread = np.percentile(hand, 90, axis=0) - np.percentile(hand, 10, axis=0)
+                moving |= np.linalg.norm(spread) / np.sqrt(21) >= 0.12
+        if not moving:
+            return None
 
-            match["stable"] = bool(self.candidate_count >= self.stability_threshold)
-            return match
+        self.load_model()
+        seq = resample_sequence(interpolate_short_dropouts(frames), self._predictor.sequence_length)
+        # Average slightly shifted views so a few frames of raising or lowering
+        # the hands do not determine the output by themselves.
+        edge = max(1, self._predictor.sequence_length // 10)
+        views = (seq, resample_sequence(seq[edge:]), resample_sequence(seq[:-edge]))
+        views = [self._predictor.predict_sequence(view) for view in views]
+        scores = np.mean(views, axis=0)
+        first, second = np.argsort(scores)[-2:][::-1]
+        label = self._predictor.class_names[first]
+        confidence = float(scores[first])
+        votes = sum(int(np.argmax(view)) == first for view in views)
+        if (label not in GREETINGS or confidence < self.threshold
+                or confidence - scores[second] < 0.20 or votes < 2):
+            return None
+        return {"gesture": label, "english": GREETINGS[label][0],
+                "confidence": confidence, "category": "Conversation"}
 
-        self.reset()
-        return None
+    def _count(self, hands, now):
+        patterns = [_finger_pattern(hand) for hand in hands]
+        number = None
+        if len(patterns) == 1 and patterns[0] in COUNTS:
+            number = COUNTS[patterns[0]][0]
+        elif len(patterns) == 2 and all(pattern == (True,) * 5 for pattern in patterns):
+            number = 10
+
+        if number is None:
+            self._candidate = None
+            self._neutral_since = now if self._neutral_since is None else self._neutral_since
+            if now - self._neutral_since >= RELEASE_SECONDS:
+                self._emitted_count = None
+            return None
+        self._neutral_since = None
+        if number != self._candidate:
+            self._candidate = number
+            self._candidate_since = now
+            return None
+        if number == self._emitted_count or now - self._candidate_since < 0.22:
+            return None
+        self._emitted_count = number
+        return {"gesture": COUNT_NAMES[number], "english": _count_translation(number),
+                "confidence": None, "category": "Counting"}

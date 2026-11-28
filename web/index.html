@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The OptiMistic Glasses — Hand-Symbol Conversation Translator</title>
+  <title>The OptiMistic Glasses | Connected ISL Translator (500+ Signs)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,115 +12,133 @@
       <span class="dot"></span>
       <div>
         <h1>The OptiMistic Glasses</h1>
-        <p class="subtitle">Live Hand-Symbol ISL Conversation Translator &amp; Complete Guide</p>
+        <p class="subtitle">Indian Sign Language (500+ Signs) Connected Speech & Dialogue Translator</p>
       </div>
     </div>
     <div class="status-pills">
-      <span id="api-status" class="pill pill-muted">API: Connecting...</span>
+      <span id="api-status" class="pill pill-muted">API: Connecting</span>
       <span id="cam-status" class="pill pill-muted">Camera: Stopped</span>
-      <label class="toggle-label">
-        <input id="auto-speak" type="checkbox" checked />
-        <span>Auto-Speak</span>
-      </label>
+      <span id="vocab-status" class="pill pill-info">Dictionary: 541 Signs</span>
     </div>
   </header>
 
   <main class="grid">
-    <!-- Live Camera + Hand Landmarks -->
+    <!-- Camera Section -->
     <section class="card">
       <div class="card-header">
-        <h2>Live Hand-Symbol Camera</h2>
+        <h2>Live Camera & Foreground Tracking</h2>
         <div class="btn-row">
-          <button id="start-cam-btn" class="btn btn-primary" type="button">Start Camera</button>
-          <button id="reset-buf-btn" class="btn btn-secondary" type="button" disabled>Reset</button>
+          <button id="start-cam-btn" class="btn btn-primary" type="button">Start camera</button>
+          <button id="reset-buf-btn" class="btn btn-secondary" type="button" disabled>Reset tracking</button>
           <button id="stop-cam-btn" class="btn btn-secondary" type="button" disabled>Stop</button>
         </div>
       </div>
       <div class="camera-box">
-        <img id="camera-stream" alt="Live camera feed with MediaPipe hand landmarks" class="hidden" />
+        <img id="camera-stream" alt="Live camera with foreground hand tracking" class="hidden" />
         <div id="camera-placeholder" class="camera-placeholder">
-          Click <strong>Start Camera</strong> and show hand symbols to build a live conversation.
+          Position yourself naturally in front of the camera. The intelligent near-hand filter prioritizes your gestures and rejects background movement.
         </div>
       </div>
       <div class="cam-telemetry">
-        <span id="hands-indicator">Hands: --</span>
+        <span id="hands-indicator">Foreground hands: --</span>
         <span id="fps-indicator">FPS: --</span>
-        <span id="latency-indicator">AI: -- ms</span>
-        <span id="buffer-indicator">Buffer: 0/30</span>
+        <span id="latency-indicator">Last frame: --</span>
       </div>
       <div class="threshold-row">
-        <label for="threshold-slider">Sensitivity: <strong id="threshold-val">55%</strong></label>
-        <input id="threshold-slider" type="range" min="35" max="90" value="55" />
+        <label for="threshold-slider">Minimum Confidence: <strong id="threshold-val">75%</strong></label>
+        <input id="threshold-slider" type="range" min="65" max="95" value="75" />
       </div>
     </section>
 
-    <!-- Smart Glasses Conversation HUD -->
+    <!-- Connected Sentence Translation Section -->
     <section class="card hud-card">
       <div class="card-header">
-        <h2>Live Conversation HUD</h2>
-        <span id="hud-clock" class="mono">--:--:--</span>
+        <h2>Connected Sentence Translator</h2>
+        <div class="btn-row recognition-controls">
+          <label for="recognition-mode">Mode</label>
+          <select id="recognition-mode">
+            <option value="conversation">Continuous Conversation</option>
+            <option value="counting">Counting (Numbers 1-10)</option>
+          </select>
+          <label class="toggle-label">
+            <input id="auto-speak" type="checkbox" checked />
+            <span>Speak Completed Sentences (TTS)</span>
+          </label>
+        </div>
       </div>
 
-      <div class="hud-screen" id="hud-screen">
+      <!-- Real-Time HUD Display -->
+      <div class="hud-screen">
         <div class="hud-top">
-          <span class="hud-badge">CONVERSATION MODE</span>
+          <span id="hud-badge" class="hud-badge">CONNECTED CONVERSATION</span>
           <span id="hud-mode" class="hud-mode">STANDBY</span>
         </div>
-
+        
         <div class="hud-center">
-          <div id="hud-symbol" class="hud-symbol">🖐️</div>
-          <div id="hud-primary" class="hud-primary">Ready for Conversation</div>
-          <div id="hud-secondary" class="hud-secondary">Sign hand symbols one after another to form a full sentence</div>
+          <div id="hud-primary" class="hud-primary" role="status">Ready</div>
+          <div id="hud-secondary" class="hud-secondary">Show signs sequentially; pause or rest hands to complete sentence.</div>
+        </div>
+
+        <!-- Live Sentence Drafting Banner -->
+        <div id="live-draft-container" class="live-draft-container hidden">
+          <div class="draft-header">
+            <span class="draft-pulse"></span>
+            <strong>Sentence Drafting in Progress:</strong>
+          </div>
+          <div id="hud-draft-text" class="hud-draft-text">...</div>
+          <div id="hud-token-chips" class="hud-token-chips"></div>
         </div>
 
         <div class="hud-bottom">
-          <span id="hud-confidence">Confidence: --</span>
-          <span id="hud-category">Category: --</span>
+          <span id="hud-confidence"></span>
+          <span id="hud-status-hint">Zero-Buffer Connected ISL Engine Active</span>
         </div>
       </div>
 
-      <!-- Full Conversation Sentence Builder -->
+      <!-- Finalized Sentence Transcript -->
       <div class="conversation-panel">
         <div class="transcript-header">
-          <h3>Live Conversation Sentence</h3>
+          <h3>Spoken Sentence Transcript</h3>
           <div class="btn-row">
-            <button id="speak-sentence-btn" class="chip chip-accent" type="button">🔊 Speak Sentence</button>
-            <button id="undo-word-btn" class="chip" type="button">↩ Undo</button>
+            <button id="speak-sentence-btn" class="chip chip-accent" type="button" disabled>Speak Transcript</button>
+            <button id="undo-word-btn" class="chip" type="button" disabled>Undo Last</button>
             <button id="clear-transcript-btn" class="chip" type="button">Clear</button>
           </div>
         </div>
         <div id="conversation-sentence" class="conversation-sentence">
-          <span class="muted">Your signed conversation will appear here as a full sentence...</span>
-        </div>
-      </div>
-
-      <div class="top3-box">
-        <div class="top3-title">Live Model Top-3 Hand Candidates</div>
-        <div id="top3-bars" class="top3-bars">
-          <span class="muted">Start camera and show hands to see live probabilities...</span>
+          Completed connected sentences will appear here as they are spoken.
         </div>
       </div>
     </section>
 
-    <!-- Complete Conversation Flows -->
-    <section class="card span-2">
+    <!-- 500+ Sign Master ISL Dictionary Section -->
+    <section class="card span-2 dictionary-section">
       <div class="card-header">
-        <h2>Complete Conversation Guide — How to Chain Hand Symbols</h2>
-        <div id="isl-metrics-summary" class="metrics-summary">Loading model metrics...</div>
+        <div>
+          <h2>Indian Sign Language Master Dictionary & Sign Guide</h2>
+          <p class="subtitle">540+ Standardized ISL signs (ISLRTC & INCLUDE datasets) with execution guides & video links</p>
+        </div>
+        <span id="dict-count-badge" class="pill pill-accent">541 Signs Available</span>
       </div>
-      <p class="muted">
-        To hold a <strong>full conversation</strong> (not just one word), sign each hand symbol for ~1–1.5 seconds, pause 0.5 seconds, then sign the next. Click any conversation below to preview it on the HUD:
-      </p>
-      <div id="conversation-flows" class="flows-grid"></div>
-    </section>
 
-    <!-- Hand-Symbol Reference Cards -->
-    <section class="card span-2">
-      <div class="card-header">
-        <h2>Hand-Symbol Dictionary (All 15 Live-Recognized Signs)</h2>
-        <span class="badge">Hand Symbol + Exact Motion</span>
+      <!-- Search & Filters -->
+      <div class="dict-controls">
+        <div class="search-box">
+          <input
+            id="dict-search-input"
+            type="search"
+            placeholder="Search 540+ signs in English or Hindi (e.g. Doctor, Water, नमस्ते, Hungry, Hospital)..."
+          />
+        </div>
+        <div id="category-pills" class="category-pills-row">
+          <!-- Filled dynamically by JavaScript -->
+        </div>
       </div>
-      <div id="gesture-grid" class="guide-grid"></div>
+
+      <!-- Dictionary Cards Grid -->
+      <div id="dictionary-grid" class="dictionary-grid">
+        <div class="loading-spinner">Loading 500+ Indian Sign Language signs...</div>
+      </div>
     </section>
   </main>
 

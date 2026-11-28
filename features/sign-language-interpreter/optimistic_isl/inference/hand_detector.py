@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -29,11 +29,13 @@ class RealTimeHandDetector:
         min_detection_confidence: float = config.DATASET_CONFIG.min_hand_detection_confidence,
         min_presence_confidence: float = config.DATASET_CONFIG.min_hand_presence_confidence,
         min_tracking_confidence: float = config.DATASET_CONFIG.min_tracking_confidence,
+        foreground_selector: Optional[Callable] = None,
     ) -> None:
+        self._foreground_selector = foreground_selector
         self.detection_width = detection_width
         self._extractor = MediaPipeHandExtractor(
             task_model_path=task_model_path,
-            num_hands=config.DATASET_CONFIG.num_hands,
+            num_hands=4 if foreground_selector else config.DATASET_CONFIG.num_hands,
             min_detection_confidence=min_detection_confidence,
             min_presence_confidence=min_presence_confidence,
             min_tracking_confidence=min_tracking_confidence,
@@ -55,7 +57,11 @@ class RealTimeHandDetector:
             resized = frame_bgr
 
         rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-        left_hand, right_hand, raw_hands = self._extractor.detect_rgb(rgb)
+        if self._foreground_selector is None:
+            left_hand, right_hand, raw_hands = self._extractor.detect_rgb(rgb)
+        else:
+            left_hand, right_hand = self._foreground_selector(self._extractor.detect_labeled_rgb(rgb))
+            raw_hands = [hand for hand in (left_hand, right_hand) if hand is not None]
         features = build_frame_feature_vector(left_hand, right_hand)
         detected = (left_hand is not None) or (right_hand is not None)
         return features, detected, raw_hands

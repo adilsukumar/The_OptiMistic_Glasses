@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import json
-import queue
 import sys
 import threading
 import time
+from collections import deque
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -16,7 +16,6 @@ ROOT_DIR = Path(__file__).resolve().parent
 WEB_DIR = ROOT_DIR / "web"
 VOICE_PARENT = ROOT_DIR / "features" / "voice-command"
 ISL_DIR = ROOT_DIR / "features" / "sign-language-interpreter" / "optimistic_isl"
-DATA_DIR = ROOT_DIR / "data"
 
 for path_entry in (str(ROOT_DIR), str(VOICE_PARENT), str(ISL_DIR)):
     if path_entry not in sys.path:
@@ -31,123 +30,22 @@ except Exception as exc:  # pragma: no cover
     _PARSER = None
     _PARSER_ERROR = str(exc)
 
-from isl_recognition_engine import PrecisionISLRecognizer, analyze_hand
+from isl_recognition_engine import (
+    INCLUDE_VIDEOS, ISL_LESSON, ForegroundHands, PrecisionISLRecognizer, SigningFace, gesture_guide,
+)
+from isl_speech import WindowsSpeaker, format_transcript
+import isl_vocabulary_db as db
 
-
-class RobustWindowsSpeaker:
-    """Threaded Windows speaker using SAPI with PowerShell System.Speech fallback."""
-
-    def __init__(self, rate: int = 1) -> None:
-        self.q: queue.Queue[str] = queue.Queue(maxsize=5)
-        self.rate = rate
-        self.worker = threading.Thread(target=self._run, daemon=True)
-        self.worker.start()
-
-    def _run(self) -> None:
-        spk = None
-        try:
-            import pythoncom
-            import win32com.client
-
-            pythoncom.CoInitialize()
-            spk = win32com.client.Dispatch("SAPI.SpVoice")
-            spk.Rate = self.rate
-        except Exception:
-            spk = None
-
-        while True:
-            text = self.q.get()
-            if not text:
-                continue
-
-            spoken = False
-            if spk is not None:
-                try:
-                    spk.Speak(text, 0)
-                    spoken = True
-                except Exception:
-                    pass
-
-            if not spoken:
-                try:
-                    import subprocess
-
-                    sanitized = text.replace('"', '\\"')
-                    cmd = f'Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak("{sanitized}")'
-                    subprocess.run(
-                        ["powershell", "-NoProfile", "-Command", cmd],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
-                except Exception:
-                    pass
-
-            self.q.task_done()
-
-    def speak(self, text: str) -> None:
-        clean = text.strip()
-        if not clean:
-            return
-        while not self.q.empty():
-            try:
-                self.q.get_nowait()
-                self.q.task_done()
-            except Exception:
-                break
-        self.q.put(clean)
-
-
-_SPEAKER = RobustWindowsSpeaker(rate=1)
-
-# English & Hindi translation mappings for recognized signs
-TRANSLATIONS: Dict[str, Dict[str, str]] = {
-    "NAMASTE": {"english": "Namaste", "hindi": "नमस्ते"},
-    "HELLO": {"english": "Hello", "hindi": "हैलो / नमस्ते"},
-    "GOODBYE": {"english": "Goodbye", "hindi": "अलविदा"},
-    "BYE": {"english": "Goodbye", "hindi": "अलविदा"},
-    "HOW ARE YOU": {"english": "How are you?", "hindi": "आप कैसे हैं?"},
-    "I AM FINE": {"english": "I am fine", "hindi": "मैं ठीक हूँ"},
-    "ALRIGHT": {"english": "Alright", "hindi": "ठीक है"},
-    "I AM A BOY": {"english": "I am a boy", "hindi": "मैं एक लड़का हूँ"},
-    "I AM A GIRL": {"english": "I am a girl", "hindi": "मैं एक लड़की हूँ"},
-    "GOOD MORNING": {"english": "Good morning", "hindi": "शुभ प्रभात"},
-    "GOOD AFTERNOON": {"english": "Good afternoon", "hindi": "शुभ दोपहर"},
-    "GOOD EVENING": {"english": "Good evening", "hindi": "शुभ संध्या"},
-    "GOOD NIGHT": {"english": "Good night", "hindi": "शुभ रात्रि"},
-    "THANK YOU": {"english": "Thank you", "hindi": "धन्यवाद"},
-    "PLEASED": {"english": "Pleased to meet you", "hindi": "आपसे मिलकर अच्छा लगा"},
-    "I LOVE YOU": {"english": "I love you", "hindi": "मैं तुमसे प्यार करता हूँ"},
-    "YES": {"english": "Yes", "hindi": "हाँ"},
-    "NO": {"english": "No", "hindi": "नहीं"},
-    "STOP": {"english": "Stop", "hindi": "रुकिए / बंद करें"},
-    "WAIT": {"english": "Wait", "hindi": "रुकिए / प्रतीक्षा करें"},
-    "PLEASE": {"english": "Please", "hindi": "कृपया"},
-    "HELP ME": {"english": "Help me", "hindi": "मेरी मदद करो"},
-    "WHAT ARE YOU DOING": {"english": "What are you doing?", "hindi": "आप क्या कर रहे हैं?"},
-    "ONE": {"english": "One (1)", "hindi": "एक"},
-    "TWO": {"english": "Two (2)", "hindi": "दो"},
-    "THREE": {"english": "Three (3)", "hindi": "तीन"},
-    "FOUR": {"english": "Four (4)", "hindi": "चार"},
-    "FIVE": {"english": "Five (5)", "hindi": "पाँच"},
-    "SIX": {"english": "Six (6)", "hindi": "छह"},
-    "SEVEN": {"english": "Seven (7)", "hindi": "सात"},
-    "EIGHT": {"english": "Eight (8)", "hindi": "आठ"},
-    "TEN": {"english": "Ten (10)", "hindi": "दस"},
-    "SUMMER": {"english": "Summer", "hindi": "गर्मी का मौसम"},
-    "SPRING": {"english": "Spring", "hindi": "वसंत ऋतु"},
-    "WINTER": {"english": "Winter", "hindi": "सर्दी का मौसम"},
-    "FALL": {"english": "Autumn / Fall", "hindi": "पतझड़"},
-    "SEASON": {"english": "Season", "hindi": "मौसम"},
-    "MONSOON": {"english": "Monsoon / Rainy Season", "hindi": "मानसून / बारिश"},
-}
+_SPEAKER = WindowsSpeaker()
 
 
 class ISLController:
-    """Decoupled high-FPS camera capture + Hybrid MediaPipe/TFLite/Geometric ISL inference."""
+    """Keep the latest camera frame and publish completed recognition events."""
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._frame_cond = threading.Condition()
+        self._raw_ready = threading.Event()
         self._running = False
         self._mirror_mode = True
         self._capture_thread: Optional[threading.Thread] = None
@@ -159,29 +57,15 @@ class ISLController:
         self._jpeg_seq = 0
 
         self._latest_hands: List[Any] = []
-        self._hands_detected = False
-        self._confidence_threshold = 0.55
-        self._reset_requested = False
-
-        self._recognizer = PrecisionISLRecognizer(stability_threshold=2)
-        self._latest_buffer: Optional[Any] = None
-
-        self._latest_prediction: Dict[str, Any] = {
-            "running": False,
-            "gesture": "CAMERA STOPPED",
-            "english": "",
-            "hindi": "",
-            "recognized": False,
-            "confidence": 0.0,
-            "hands_detected": False,
-            "buffer_fill": 0,
-            "buffer_capacity": 30,
-            "top_predictions": [],
-            "source": "",
-            "fps": 0.0,
-            "latency_ms": 0.0,
-            "mirror_mode": True,
-            "error": "",
+        self._confidence_threshold = 0.75
+        self._mode = "conversation"
+        self._auto_speak = True
+        self._revision = 0
+        self._event_id = 0
+        self._events = deque(maxlen=100)
+        self._latest_prediction = {
+            "running": False, "hands_detected": False, "fps": 0.0, "latency_ms": 0.0,
+            "mirror_mode": True, "status": "Standby", "error": "",
         }
 
     def is_running(self) -> bool:
@@ -189,7 +73,7 @@ class ISLController:
             return self._running
 
     def set_threshold(self, threshold: float) -> float:
-        clamped = max(0.35, min(0.95, float(threshold)))
+        clamped = max(0.65, min(0.95, float(threshold)))
         with self._lock:
             self._confidence_threshold = clamped
         return clamped
@@ -200,47 +84,58 @@ class ISLController:
             self._latest_prediction["mirror_mode"] = self._mirror_mode
         return self._mirror_mode
 
-    def request_reset(self) -> None:
+    def set_mode(self, mode: str) -> str:
+        if mode not in ("conversation", "counting"):
+            raise ValueError("Choose Conversation or Counting.")
         with self._lock:
-            self._reset_requested = True
+            if mode != self._mode:
+                self._mode = mode
+                self._revision += 1
+                self._latest_prediction["status"] = "Show your hands"
+                _SPEAKER.clear()
+        return mode
 
-    def record_custom_sample(self, label: str) -> Dict[str, Any]:
+    def set_auto_speak(self, enabled: bool) -> bool:
         with self._lock:
-            buf = self._latest_buffer
-        if buf is None:
-            return {"success": False, "error": "No landmark buffer available yet. Show hands to webcam first."}
-        count = self._custom_classifier.add_sample(label, buf)
-        return {"success": True, "label": label.upper(), "sample_count": count}
+            self._auto_speak = enabled
+            if not enabled:
+                _SPEAKER.clear()
+        return enabled
 
-    def delete_custom_sign(self, label: str) -> Dict[str, Any]:
-        deleted = self._custom_classifier.delete_sign(label)
-        return {"success": deleted, "label": label.upper()}
+    def request_reset(self, clear_transcript: bool = False) -> None:
+        with self._lock:
+            self._revision += 1
+            self._latest_prediction["status"] = "Show your hands"
+            if clear_transcript:
+                self._events.clear()
+                _SPEAKER.clear()
 
-    def get_custom_signs(self) -> List[Dict[str, Any]]:
-        return self._custom_classifier.list_signs()
+    def speak_transcript(self, event_ids: list[int]) -> bool:
+        with self._lock:
+            if self._mode != "conversation":
+                return False
+            phrases = {event["id"]: event["english"] for event in self._events
+                       if event.get("category") != "Counting"}
+            if (not isinstance(event_ids, list) or not 0 < len(event_ids) <= len(phrases)
+                    or any(type(idx) is not int or idx not in phrases for idx in event_ids)):
+                return False
+            _SPEAKER.speak(format_transcript(phrases[idx] for idx in event_ids))
+            return True
 
     def start(self, camera_index: int = 0) -> Dict[str, Any]:
         with self._lock:
             if self._running:
                 return {"started": True, "already_running": True}
+            if any(thread and thread.is_alive() for thread in (self._capture_thread, self._infer_thread)):
+                return {"started": False, "error": "Camera is stopping. Try again in a moment."}
             self._running = True
             self._latest_hands = []
-            self._hands_detected = False
             self._latest_raw_frame = None
             self._latest_jpeg = None
+            self._raw_ready.clear()
             self._latest_prediction.update(
-                {
-                    "running": True,
-                    "gesture": "STARTING CAMERA...",
-                    "english": "",
-                    "hindi": "",
-                    "recognized": False,
-                    "confidence": 0.0,
-                    "hands_detected": False,
-                    "buffer_fill": 0,
-                    "top_predictions": [],
-                    "error": "",
-                }
+                running=True, hands_detected=False, fps=0.0, latency_ms=0.0,
+                status="Starting camera", error="",
             )
             self._capture_thread = threading.Thread(
                 target=self._capture_loop, args=(camera_index,), daemon=True
@@ -255,6 +150,8 @@ class ISLController:
     def stop(self) -> Dict[str, Any]:
         with self._lock:
             self._running = False
+            self._raw_ready.set()
+            _SPEAKER.clear()
             cap_t = self._capture_thread
             inf_t = self._infer_thread
         with self._frame_cond:
@@ -267,24 +164,19 @@ class ISLController:
             self._latest_jpeg = None
             self._latest_raw_frame = None
             self._latest_hands = []
-            self._latest_prediction["running"] = False
-            self._latest_prediction["gesture"] = "CAMERA STOPPED"
-            self._latest_prediction["english"] = ""
-            self._latest_prediction["hindi"] = ""
-            self._latest_prediction["recognized"] = False
-            self._latest_prediction["hands_detected"] = False
-            self._latest_prediction["top_predictions"] = []
+            self._latest_prediction.update(running=False, hands_detected=False, status="Standby")
         return {"stopped": True}
 
     def get_prediction(self) -> Dict[str, Any]:
         with self._lock:
-            return dict(self._latest_prediction)
+            return dict(self._latest_prediction, mode=self._mode, auto_speak=self._auto_speak,
+                        threshold=self._confidence_threshold, events=list(self._events))
 
     def wait_for_jpeg(self, last_seq: int, timeout: float = 0.5) -> tuple[Optional[bytes], int]:
         with self._frame_cond:
             if self._jpeg_seq == last_seq and self._running:
                 self._frame_cond.wait(timeout=timeout)
-            return self._latest_jpeg, self._jpeg_seq
+            return (self._latest_jpeg if self._jpeg_seq != last_seq else None), self._jpeg_seq
 
     def _capture_loop(self, camera_index: int) -> None:
         import cv2  # type: ignore
@@ -295,6 +187,7 @@ class ISLController:
         try:
             cap = cv2.VideoCapture(camera_index, cv2.CAP_DSHOW)
             if not cap.isOpened():
+                cap.release()
                 cap = cv2.VideoCapture(camera_index)
             if not cap.isOpened():
                 raise RuntimeError(f"Could not open camera index {camera_index}")
@@ -307,15 +200,19 @@ class ISLController:
             fps_t0 = time.perf_counter()
             fps_frames = 0
             current_fps = 0.0
+            last_frame = fps_t0
 
             while self.is_running():
                 ok, frame = cap.read()
                 if not ok or frame is None:
+                    if time.perf_counter() - last_frame > 3:
+                        raise RuntimeError("The camera stopped delivering frames.")
                     time.sleep(0.01)
                     continue
 
                 fps_frames += 1
                 now = time.perf_counter()
+                last_frame = now
                 if now - fps_t0 >= 1.0:
                     current_fps = fps_frames / (now - fps_t0)
                     fps_frames = 0
@@ -327,6 +224,7 @@ class ISLController:
                     self._frame_seq += 1
                     hands = list(self._latest_hands)
                     self._latest_prediction["fps"] = round(current_fps, 1)
+                    self._raw_ready.set()
 
                 display_frame = cv2.flip(frame, 1) if mirror else frame.copy()
                 if hands:
@@ -361,99 +259,73 @@ class ISLController:
                 cap.release()
 
     def _inference_loop(self) -> None:
-        import numpy as np  # type: ignore
-        import config  # type: ignore
-        from dataset.extract_landmarks import interpolate_short_dropouts  # type: ignore
-        from inference.gesture_predictor import GesturePredictor  # type: ignore
-        from inference.hand_detector import RealTimeHandDetector  # type: ignore
-
         detector = None
         try:
-            detector = RealTimeHandDetector(detection_width=320)
-            predictor = GesturePredictor(
-                confidence_threshold=self._confidence_threshold,
-                smoothing_window=5,
-                min_consistent_frames=2,
-            )
-            predictor.smoother.ema_alpha = 0.60
+            from inference.hand_detector import RealTimeHandDetector
 
+            foreground = ForegroundHands()
+            face_tracker = SigningFace()
+            detector = RealTimeHandDetector(detection_width=384, foreground_selector=foreground.select)
+            recognizer = PrecisionISLRecognizer()
+            recognizer.load_model()
+            revision = -1
             last_seq = -1
-            active_spoken_sign: Optional[str] = None
-            no_match_frames = 0
             while self.is_running():
+                self._raw_ready.wait(timeout=0.25)
+                self._raw_ready.clear()
                 with self._lock:
                     frame = self._latest_raw_frame
                     seq = self._frame_seq
+                    mode = self._mode
                     threshold = self._confidence_threshold
-                    do_reset = self._reset_requested
-                    self._reset_requested = False
-
-                if do_reset:
-                    predictor.reset()
-
-                predictor.smoother.confidence_threshold = threshold
-
+                    current_revision = self._revision
                 if frame is None or seq == last_seq:
-                    time.sleep(0.01)
                     continue
                 last_seq = seq
+                if revision != current_revision:
+                    recognizer.reset()
+                    foreground.reset()
+                    face_tracker.reset()
+                    revision = current_revision
+                recognizer.mode = mode
+                recognizer.threshold = threshold
 
-                feat, detected, raw_hands = detector.process_bgr_frame(frame)
-                match = self._recognizer.process(raw_hands)
-
-                top_preds: List[Dict[str, Any]] = []
-                gesture = "ANALYZING..."
-                english = ""
-                hindi = ""
-                recognized = False
-                confidence = 0.0
-                latency_ms = 0.0
-                source = "Precision ISL"
-
-                buf_len = int(self._recognizer.candidate_count)
-                cap_len = int(self._recognizer.stability_threshold)
-
-                if match is not None:
-                    gesture = match["gesture"]
-                    english = match["english"]
-                    hindi = match["hindi"]
-                    confidence = float(match["confidence"])
-                    recognized = bool(match.get("stable", False))
-                    top_preds = [
-                        {"label": gesture, "confidence": confidence},
-                    ]
-                    if recognized and english and gesture != active_spoken_sign:
-                        active_spoken_sign = gesture
-                        no_match_frames = 0
-                        _SPEAKER.speak(english)
+                start = time.perf_counter()
+                features, detected, hands = detector.process_bgr_frame(frame)
+                face = face_tracker.locate(frame) if detected and mode == "conversation" else None
+                match = recognizer.process(features, hands, face=face)
+                elapsed = (time.perf_counter() - start) * 1000
+                if mode == "counting":
+                    status = "Hold a number pose" if detected else "Show a number pose"
                 else:
-                    no_match_frames += 1
-                    if no_match_frames > 15:
-                        active_spoken_sign = None
-
+                    status = recognizer.status
+                preview = recognizer.get_live_sentence_preview()
                 with self._lock:
-                    self._latest_hands = raw_hands if detected else []
-                    self._hands_detected = detected
+                    if not self._running or revision != self._revision:
+                        continue
+                    self._latest_hands = hands
                     self._latest_prediction.update(
-                        {
-                            "running": True,
-                            "gesture": gesture,
-                            "english": english,
-                            "hindi": hindi,
-                            "recognized": recognized,
-                            "confidence": round(confidence, 3),
-                            "hands_detected": detected,
-                            "buffer_fill": buf_len,
-                            "buffer_capacity": cap_len,
-                            "top_predictions": top_preds,
-                            "source": source,
-                            "latency_ms": round(latency_ms, 1),
-                            "error": "",
-                        }
+                        hands_detected=detected,
+                        status=status,
+                        latency_ms=round(elapsed, 1),
+                        live_preview=preview,
                     )
+                    if match:
+                        is_complete = match.get("is_sentence_complete", False)
+                        if mode == "conversation":
+                            # Speak out loud when full connected sentence completes
+                            if is_complete:
+                                self._event_id += 1
+                                self._events.append(dict(match, id=self._event_id))
+                                if self._auto_speak:
+                                    _SPEAKER.speak(match["english"])
+                        else:
+                            self._event_id += 1
+                            self._events.append(dict(match, id=self._event_id))
         except Exception as exc:
             with self._lock:
-                self._latest_prediction["error"] = str(exc)
+                self._running = False
+                self._latest_prediction.update(running=False, error=str(exc))
         finally:
             if detector is not None:
                 detector.close()
@@ -503,18 +375,40 @@ class OptimisticHandler(SimpleHTTPRequestHandler):
                     "parser_error": _PARSER_ERROR,
                     "labels": labels,
                     "metrics": metrics,
-                    "supported_translations": TRANSLATIONS,
+                    "gesture_guide": gesture_guide(),
+                    "supported_translations": {
+                        entry["gesture"]: {"english": entry["english"], "hindi": entry["hindi"]}
+                        for entry in gesture_guide()
+                    },
+                    "total_signs": len(db.ISL_MASTER_VOCABULARY),
+                    "categories": db.get_categories(),
+                    "isl_lesson": ISL_LESSON,
+                    "include_videos": INCLUDE_VIDEOS,
                 }
             )
             return
 
-        if self.path == "/api/vocabulary":
-            vocab = _read_json(WEB_DIR / "isl_vocabulary.json")
-            self._send_json({"vocabulary": vocab or []})
+        if self.path.startswith("/api/vocabulary"):
+            from urllib.parse import parse_qs, urlparse
+            query_params = parse_qs(urlparse(self.path).query)
+            q = query_params.get("q", [""])[0].strip()
+            cat = query_params.get("category", [""])[0].strip()
+            if q:
+                results = db.search_signs(q, limit=60)
+            elif cat and cat in db.BY_CATEGORY:
+                results = db.BY_CATEGORY[cat]
+            else:
+                results = db.ISL_MASTER_VOCABULARY
+            self._send_json({
+                "total": len(db.ISL_MASTER_VOCABULARY),
+                "count": len(results),
+                "categories": db.get_categories(),
+                "vocabulary": results,
+            })
             return
 
         if self.path == "/api/custom-signs":
-            self._send_json({"custom_signs": _ISL_CONTROLLER.get_custom_signs()})
+            self._send_json({"custom_signs": []})
             return
 
         if self.path == "/api/camera/prediction":
@@ -563,26 +457,29 @@ class OptimisticHandler(SimpleHTTPRequestHandler):
             self._send_json(_ISL_CONTROLLER.start(camera_index=0))
             return
 
-        if self.path == "/api/camera/speak":
-            length = int(self.headers.get("Content-Length", "0"))
-            raw_body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-            try:
-                data = json.loads(raw_body)
-                text = str(data.get("text", "")).strip()
-                if text:
-                    _SPEAKER.speak(text)
-                self._send_json({"spoken": True, "text": text})
-            except Exception as exc:
-                self._send_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
-            return
-
         if self.path == "/api/camera/stop":
             self._send_json(_ISL_CONTROLLER.stop())
             return
 
-        if self.path == "/api/camera/reset":
-            _ISL_CONTROLLER.request_reset()
-            self._send_json({"reset": True})
+        if self.path in {"/api/camera/speak", "/api/camera/reset",
+                         "/api/camera/mode", "/api/camera/auto-speak"}:
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                data = json.loads(self.rfile.read(length) if length else "{}")
+                if self.path == "/api/camera/speak":
+                    if not _ISL_CONTROLLER.speak_transcript(data.get("event_ids", [])):
+                        raise ValueError("Select completed Conversation translations to speak.")
+                    result = {"spoken": True}
+                elif self.path == "/api/camera/reset":
+                    _ISL_CONTROLLER.request_reset(data.get("clear") is True)
+                    result = {"reset": True}
+                elif self.path == "/api/camera/mode":
+                    result = {"mode": _ISL_CONTROLLER.set_mode(data.get("mode"))}
+                else:
+                    result = {"auto_speak": _ISL_CONTROLLER.set_auto_speak(data.get("enabled") is True)}
+                self._send_json(result)
+            except (ValueError, TypeError, AttributeError) as exc:
+                self._send_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
             return
 
         if self.path == "/api/camera/mirror":
@@ -607,31 +504,9 @@ class OptimisticHandler(SimpleHTTPRequestHandler):
                 self._send_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
             return
 
-        if self.path == "/api/custom-signs/record":
-            length = int(self.headers.get("Content-Length", "0"))
-            raw_body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-            try:
-                data = json.loads(raw_body)
-                label = str(data.get("label", "")).strip()
-                if not label:
-                    self._send_json({"error": "Missing sign label"}, status=HTTPStatus.BAD_REQUEST)
-                    return
-                res = _ISL_CONTROLLER.record_custom_sample(label)
-                self._send_json(res)
-            except Exception as exc:
-                self._send_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
-            return
-
-        if self.path == "/api/custom-signs/delete":
-            length = int(self.headers.get("Content-Length", "0"))
-            raw_body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-            try:
-                data = json.loads(raw_body)
-                label = str(data.get("label", "")).strip()
-                res = _ISL_CONTROLLER.delete_sign(label)
-                self._send_json(res)
-            except Exception as exc:
-                self._send_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
+        if self.path in {"/api/custom-signs/record", "/api/custom-signs/delete"}:
+            self._send_json({"success": False, "error": "Custom sign training is unavailable."},
+                            status=HTTPStatus.NOT_IMPLEMENTED)
             return
 
         if self.path == "/api/parse-command":
@@ -684,7 +559,9 @@ def main() -> None:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nShutting down server...")
+    finally:
         _ISL_CONTROLLER.stop()
+        _SPEAKER.close()
         server.server_close()
 
 

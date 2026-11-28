@@ -3,7 +3,7 @@ param (
     [switch]$Guide,
     [switch]$NoVoice,
     [int]$Camera = 0,
-    [double]$Threshold = 0.55
+    [double]$Threshold = 0.75
 )
 
 $scriptPath = Join-Path $PSScriptRoot "isl_app.py"

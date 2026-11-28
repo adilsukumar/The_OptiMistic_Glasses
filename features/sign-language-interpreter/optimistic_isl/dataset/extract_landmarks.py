@@ -186,63 +186,37 @@ class MediaPipeHandExtractor:
         Returns:
             (left_hand_xyz, right_hand_xyz, raw_2d_landmarks_list)
         """
-        left_hand: Optional[np.ndarray] = None
-        right_hand: Optional[np.ndarray] = None
-        raw_hands: List[np.ndarray] = []
+        hands = self.detect_labeled_rgb(rgb_frame)
+        slots = {"left": None, "right": None}
+        for label, coords in hands:
+            # Preserve the legacy dataset and feature extraction behavior.
+            other = "right" if label == "left" else "left"
+            if slots[label] is None:
+                slots[label] = coords
+            elif slots[other] is None:
+                slots[other] = coords
+        return slots["left"], slots["right"], [coords for _, coords in hands]
 
+    def detect_labeled_rgb(self, rgb_frame: np.ndarray) -> List[Tuple[str, np.ndarray]]:
+        # Keep the original MediaPipe label for foreground selection.
         if self._mode == "tasks":
-            mp_img = self._mp.Image(
+            result = self._detector.detect(self._mp.Image(
                 image_format=self._mp.ImageFormat.SRGB,
                 data=np.ascontiguousarray(rgb_frame),
-            )
-            result = self._detector.detect(mp_img)
-            hand_lms = result.hand_landmarks or []
-            handedness_list = result.handedness or []
-            for idx, lms in enumerate(hand_lms):
-                coords = np.array([[lm.x, lm.y, lm.z] for lm in lms], dtype=np.float32)
-                raw_hands.append(coords)
-                label = (
-                    handedness_list[idx][0].category_name
-                    if idx < len(handedness_list) and handedness_list[idx]
-                    else "Right"
-                )
-                if label.lower() == "left":
-                    if left_hand is None:
-                        left_hand = coords
-                    elif right_hand is None:
-                        right_hand = coords
-                else:
-                    if right_hand is None:
-                        right_hand = coords
-                    elif left_hand is None:
-                        left_hand = coords
+            ))
+            landmarks = result.hand_landmarks or []
+            categories = result.handedness or []
+            labels = [items[0].category_name if items else "Right" for items in categories]
         else:
             result = self._detector.process(rgb_frame)
-            if result.multi_hand_landmarks:
-                handedness_list = result.multi_handedness or []
-                for idx, hand_lm in enumerate(result.multi_hand_landmarks):
-                    coords = np.array(
-                        [[lm.x, lm.y, lm.z] for lm in hand_lm.landmark],
-                        dtype=np.float32,
-                    )
-                    raw_hands.append(coords)
-                    label = (
-                        handedness_list[idx].classification[0].label
-                        if idx < len(handedness_list)
-                        else "Right"
-                    )
-                    if label.lower() == "left":
-                        if left_hand is None:
-                            left_hand = coords
-                        elif right_hand is None:
-                            right_hand = coords
-                    else:
-                        if right_hand is None:
-                            right_hand = coords
-                        elif left_hand is None:
-                            left_hand = coords
+            landmarks = [item.landmark for item in result.multi_hand_landmarks or []]
+            labels = [item.classification[0].label for item in result.multi_handedness or []]
 
-        return left_hand, right_hand, raw_hands
+        return [
+            ("left" if index < len(labels) and labels[index].lower() == "left" else "right",
+             np.array([[lm.x, lm.y, lm.z] for lm in points], dtype=np.float32))
+            for index, points in enumerate(landmarks)
+        ]
 
     def close(self) -> None:
         if hasattr(self._detector, "close"):
